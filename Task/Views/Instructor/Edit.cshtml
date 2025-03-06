@@ -1,0 +1,47 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model InstructorEditVM
+<form method="post" action="/Instructor/SaveEdit/@Model.id">
+    <div class="form-group">
+        <label for="salary">Salary</label>
+        <input type="number" class="form-control" id="salary" name="salary" placeholder="Enter salary" value="@Model?.salary">
+    </div>
+    <hr />
+    <div class="form-group">
+        <label for="existing_courses">Available Courses</label>
+        <select class="custom-select" id="relevant_course_id" name="relevant_course_id">
+            @foreach (var existing_course in @Model.existing_courses)
+            {
+                @if(existing_course.CourseId == @Model.relevant_course_id)
+                {
+                    <option selected value="@existing_course.CourseId">@existing_course.name</option>
+                }
+                else 
+                {
+                    <option value="@existing_course.CourseId">@existing_course.name</option>
+                }
+            }
+        </select>
+    </div>
+    <hr />
+    <div class="form-group">
+        <label for="existing_deps">Available Departments</label>
+        <select class="custom-select" id="relevant_dep_id" name="relevant_dep_id">
+            @foreach (var existing_dep in Model.existing_departments)
+            {
+                @if (existing_dep.DepartmentId == Model.relevant_dep_id)
+                {
+                    <option selected value="@existing_dep.DepartmentId">@existing_dep.name</option>
+                }
+                else
+                {
+                    <option value="@existing_dep.DepartmentId">@existing_dep.name</option>
+                }
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
