@@ -4,47 +4,53 @@
 @{
 }
 @model InstructorNewVM
-<form method="post" action="/Instructor/SaveNew">
-    <div class="form-group">
-        <label for="fname">First name</label>
-        <input type="text" class="form-control" id="fname" name="fname" placeholder="First name"/>
+<div class="col-md-6 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">New Instructor</h4>
+            <p class="card-description"> Please enter instructor details </p>
+            <form class="forms-sample" method="post" action="/Instructor/SaveNew">
+                <div class="form-group">
+                    <label for="fname">First name</label>
+                    <input type="text" class="form-control" id="fname" name="fname" placeholder="First name" />
+                </div>
+                <div class="form-group">
+                    <label for="lname">Last name</label>
+                    <input type="text" class="form-control" id="lname" name="lname" placeholder="Last name" />
+                </div>
+                <div class="form-group">
+                    <label for="salary">Salary</label>
+                    <input type="number" class="form-control" id="salary" name="salary" placeholder="Salary">
+                </div>
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" class="form-control" id="age" name="age" placeholder="Age">
+                </div>
+                <div class="form-group">
+                    <label for="HireDate">Hiring Date</label>
+                    <input type="datetime-local" class="form-control" id="HireDate" name="HireDate" placeholder="Hiring Date">
+                </div>
+                <div class="form-group">
+                    <label for="selected_department_id">Registered Department</label>
+                    <select id="selected_department_id" name="selected_department_id">
+                        @foreach (var dep in @Model.available_departments)
+                        {
+                            <option value="@dep.DepartmentId">@dep.name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="selected_course_id">Registered Course</label>
+                    <select id="selected_course_id" name="selected_course_id">
+                        @foreach (var crs in @Model.available_courses)
+                        {
+                            <option value="@crs.CourseId">@crs.name</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
+                <button class="btn btn-light">Cancel</button>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="lname">Last name</label>
-        <input type="text" class="form-control" id="lname" name="lname" placeholder="Last name" />
-    </div>
-    <hr />
-    <div class="form-group">
-        <label for="salary">Salary</label>
-        <input type="number" class="form-control" id="salary" name="salary" placeholder="Salary">
-    </div>
-    <hr />
-    <div class="form-group">
-        <label for="age">Age</label>
-        <input type="number" class="form-control" id="age" name="age" placeholder="Age">
-    </div>
-    <div class="form-group">
-        <label for="HireDate">Hiring Date</label>
-        <input type="datetime-local" class="form-control" id="HireDate" name="HireDate" placeholder="Hiring Date">
-    </div>
-    <hr />
-    <div class="form-group">
-        <label for="selected_department_id">Registered Department</label>
-        <select id="selected_department_id" name="selected_department_id">
-            @foreach(var dep in @Model.available_departments)
-            {
-                <option value="@dep.DepartmentId">@dep.name</option>
-            }
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="selected_course_id">Registered Course</label>
-        <select id="selected_course_id" name="selected_course_id">
-            @foreach (var crs in @Model.available_courses)
-            {
-                <option value="@crs.CourseId">@crs.name</option>
-            }
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+</div>

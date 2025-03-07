@@ -5,16 +5,18 @@
 }
 @model InstructorVM
 <div class="card" style="width: 18rem;">
-    <div class="card-body">
-        <img class="block rounded float-end" src=@Model.image_path width="110" />
-        <h5 class="card-text">@Model.full_name</h5>
-        <p class="card-text">@Model.hire_date</p>
-        <ul class="list-unstyled">
-            @foreach (var course in Model.course_names)
-            {
-                <li style="color: red;">@course</li>
-            }
-        </ul>
-        <a href="/Instructor/index" class="btn btn-primary">Go to table</a>
-    </div>
+	<div class="card-body">
+		<img class="block rounded float-end" src=@Model.image_path width="110" />
+		<h5 class="card-text">@Model.full_name</h5>
+		<p class="card-text">@Model.hire_date</p>
+		<div class="list-weapper">
+			<ul class="list-unstyled">
+				@foreach (var course in Model.course_names)
+				{
+					<li style="color: red;">@course</li>
+				}
+			</ul>
+		</div>
+		<a href="/Instructor/index" class="btn btn-primary">Go to table</a>
+	</div>
 </div>
