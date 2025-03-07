@@ -4,26 +4,44 @@
 @{
 }
 @model StudentDetailsVM
-<div class="card" style="width: 18rem;">
+<div class="card">
     <div class="card-body">
-        <img class= "block rounded float-end" src="@Model.image" width="110"/>
-        <h5 class="card-text">@Model.name</h5>
-        <p class="card-text">@Model.age</p>
-        <p class="card-text">@Model.address</p>
-        <p class="card-text">@Model.dept_name</p>
-        <ul class="list-unstyled">
-            @foreach(var course in Model.courses)
-            {
-                @if(@Model.course_min_degree > course.Value)
-                {
-                    <li style="color: red;">@course.Key: @course.Value</li>
-                }
-                else
-                {
-                    <li style="color: green;">@course.Key: @course.Value</li>
-                }
-            }
-        </ul>
-        <a href="/Student/index" class="btn btn-primary">Go to table</a>
+        <div class="col-lg-12">
+            <div class="border-bottom text-center pb-4">
+                <img src="@Model.image" alt="profile" class="img-lg rounded-circle mb-3">
+                <p>@Model.name</p>
+            </div>
+            <div class="py-4">
+                <p class="clearfix">
+                    <span class="float-start"> Age </span>
+                    <span class="float-end text-muted"> @Model.age </span>
+                </p>
+                <p class="clearfix">
+                    <span class="float-start"> Address </span>
+                    <span class="float-end text-muted"> @Model.address </span>
+                </p>
+                <p class="clearfix">
+                    <span class="float-start"> Department </span>
+                    <span class="float-end text-muted"> @Model.dept_name </span>
+                </p>
+                <p class="clearfix">
+                    <span class="float-start"> Registered Courses </span>
+                    <ul class="list-group">
+                        @foreach (var course in Model.courses)
+                        {
+                            @if (@Model.course_min_degree > course.Value)
+                            {
+                                <li class="list-group-item list-group-item-danger">@course.Key: @course.Value</li>
+                            }
+                            else
+                            {
+                                <li class="list-group-item list-group-item-success">@course.Key: @course.Value</li>
+                            }
+                        }
+                    </ul>
+                </p>
+            </div>
+            <a href="/Student/index" class="btn btn-gradient-primary">Go to table</a>
+        </div>
     </div>
 </div>
