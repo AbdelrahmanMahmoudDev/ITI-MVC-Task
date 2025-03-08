@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Task.Contexts;
 using Task.Models;
-using Task.ViewModels;
+using Task.ViewModels.Instructor;
 
 namespace Task.Controllers
 {
