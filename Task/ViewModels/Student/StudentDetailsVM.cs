@@ -1,4 +1,4 @@
-﻿namespace Task.ViewModels
+﻿namespace Task.ViewModels.Student
 {
     public class StudentDetailsVM
     {
@@ -15,5 +15,5 @@
         {
             courses = new Dictionary<string, int>();
         }
-}
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using Task.Models;
 
-namespace Task.ViewModels
+namespace Task.ViewModels.Instructor
 {
     public class InstructorVM
     {
