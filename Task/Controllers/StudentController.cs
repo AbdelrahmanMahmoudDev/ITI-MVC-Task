@@ -112,5 +112,61 @@ namespace Task.Controllers
             Context.SaveChanges();
             return RedirectToAction("Index");
         }
+        
+        public IActionResult Add()
+        {
+            var departments = Context.Departments.ToList();
+            var courses = Context.Courses.ToList();
+
+            StudentAddVM deps_courses = new StudentAddVM()
+            {
+                departments = departments,
+                courses = courses,
+            };
+            return View(deps_courses);
+        }
+
+        [HttpPost]
+        public IActionResult SaveAdd(StudentAddVM form_data)
+        {
+            Student new_student = new Student()
+            {
+                name = form_data.name,
+                image ="/images/male.jpg",
+                age = form_data.age,
+                address = form_data.address,
+                DepartmentId = form_data.selected_department_id
+            };
+
+            Context.Students.Add(new_student);
+            try
+            {
+                Context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occured while saving the student\n{ex.InnerException?.Message}");
+            }
+
+            if (form_data.chosen_courses?.Any() == true)
+            {
+                var student_chosen_courses = form_data.chosen_courses.Select(crs => new CourseStudents()
+                {
+                    CourseId = crs,
+                    StudentId = new_student.StudentId,
+                    Degree = 0
+                });
+                Context.AddRange(student_chosen_courses);
+            }
+            try
+            {
+                Context.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, $"An error occured while saving the student\n{ex.InnerException?.Message}");
+            }
+            return RedirectToAction("Index");
+        }
     }
 }
