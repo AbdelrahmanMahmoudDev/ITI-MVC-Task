@@ -36,8 +36,8 @@ namespace Task.Migrations
                     lname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     salary = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    age = table.Column<int>(type: "int", nullable: false),
-                    HireDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    age = table.Column<int>(type: "int", nullable: true),
+                    HireDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DepartmentId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -47,8 +47,7 @@ namespace Task.Migrations
                         name: "FK_Instructors_Departments_DepartmentId",
                         column: x => x.DepartmentId,
                         principalTable: "Departments",
-                        principalColumn: "DepartmentId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "DepartmentId");
                 });
 
             migrationBuilder.CreateTable(
@@ -70,8 +69,7 @@ namespace Task.Migrations
                         name: "FK_Students_Departments_DepartmentId",
                         column: x => x.DepartmentId,
                         principalTable: "Departments",
-                        principalColumn: "DepartmentId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "DepartmentId");
                 });
 
             migrationBuilder.CreateTable(
@@ -82,7 +80,8 @@ namespace Task.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     topic = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    InstructorId = table.Column<int>(type: "int", nullable: false)
+                    MinimumDegree = table.Column<int>(type: "int", nullable: false),
+                    InstructorId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -91,8 +90,7 @@ namespace Task.Migrations
                         name: "FK_Courses_Instructors_InstructorId",
                         column: x => x.InstructorId,
                         principalTable: "Instructors",
-                        principalColumn: "InstructorId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "InstructorId");
                 });
 
             migrationBuilder.CreateTable(

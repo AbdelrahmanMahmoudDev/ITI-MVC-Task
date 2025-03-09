@@ -30,7 +30,7 @@ namespace Task.Contexts
                 .HasOne(cs => cs.Student)
                 .WithMany(s => s.CourseStudents)
                 .HasForeignKey(cs => cs.StudentId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.Department)

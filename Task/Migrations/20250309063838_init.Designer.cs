@@ -12,7 +12,7 @@ using Task.Contexts;
 namespace Task.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20250227115527_init")]
+    [Migration("20250309063838_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -33,7 +33,10 @@ namespace Task.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CourseId"));
 
-                    b.Property<int>("InstructorId")
+                    b.Property<int?>("InstructorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinimumDegree")
                         .HasColumnType("int");
 
                     b.Property<string>("name")
@@ -103,10 +106,10 @@ namespace Task.Migrations
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("HireDate")
+                    b.Property<DateTime?>("HireDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("age")
+                    b.Property<int?>("age")
                         .HasColumnType("int");
 
                     b.Property<string>("fname")
@@ -166,8 +169,7 @@ namespace Task.Migrations
                     b.HasOne("Task.Models.Instructor", "Instructor")
                         .WithMany()
                         .HasForeignKey("InstructorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Instructor");
                 });
@@ -196,7 +198,7 @@ namespace Task.Migrations
                     b.HasOne("Task.Models.Department", "Department")
                         .WithMany("Instructors")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Department");
@@ -207,7 +209,7 @@ namespace Task.Migrations
                     b.HasOne("Task.Models.Department", "Department")
                         .WithMany("Students")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Department");

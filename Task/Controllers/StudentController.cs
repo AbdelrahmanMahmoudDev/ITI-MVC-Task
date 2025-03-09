@@ -168,5 +168,24 @@ namespace Task.Controllers
             }
             return RedirectToAction("Index");
         }
+        public IActionResult Delete(int id)
+        {
+            var target = Context.Students.Find(id);
+            var courses = Context.CourseStudents.Where(c => c.StudentId == id).ToList();
+
+            if(courses != null)
+            {
+                Context.CourseStudents.RemoveRange(courses);
+                Context.SaveChanges();
+            }
+
+            if (target != null)
+            {
+                Context.Students.Remove(target);
+                Context.SaveChanges();
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }
