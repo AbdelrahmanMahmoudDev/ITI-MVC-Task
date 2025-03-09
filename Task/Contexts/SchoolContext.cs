@@ -18,6 +18,9 @@ namespace Task.Contexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<CourseStudents>()
+                .HasKey(cs => new { cs.CourseId, cs.StudentId });
+
+            modelBuilder.Entity<CourseStudents>()
                 .HasOne(cs => cs.Course)
                 .WithMany(c => c.CourseStudents)
                 .HasForeignKey(cs => cs.CourseId)
@@ -31,7 +34,7 @@ namespace Task.Contexts
 
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.Department)
-                .WithMany()
+                .WithMany(d => d.Students)
                 .HasForeignKey(s => s.DepartmentId)
                 .OnDelete(DeleteBehavior.NoAction);
 
@@ -40,7 +43,6 @@ namespace Task.Contexts
                 .WithMany()
                 .HasForeignKey(c => c.InstructorId)
                 .OnDelete(DeleteBehavior.NoAction);
-
 
             foreach (var relationship in modelBuilder.Model.GetEntityTypes()
                 .SelectMany(e => e.GetForeignKeys()))
