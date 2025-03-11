@@ -9,30 +9,35 @@
         <div class="card-body">
             <h4 class="card-title">New Instructor</h4>
             <p class="card-description"> Please enter instructor details </p>
-            <form class="forms-sample" method="post" action="/Instructor/SaveNew">
+            <form class="forms-sample" method="post" asp-controller="Instructor" asp-action="SaveNew">
                 <div class="form-group">
-                    <label for="fname">First name</label>
-                    <input type="text" class="form-control" id="fname" name="fname" placeholder="First name" />
+                    <label asp-for="fname">First name</label>
+                    <input type="text" class="form-control" asp-for="fname" placeholder="First name" />
+                    <span asp-validation-for="fname" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label for="lname">Last name</label>
-                    <input type="text" class="form-control" id="lname" name="lname" placeholder="Last name" />
+                    <label asp-for="lname">Last name</label>
+                    <input type="text" class="form-control" asp-for="lname" placeholder="Last name" />
+                    <span asp-validation-for="lname" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label for="salary">Salary</label>
-                    <input type="number" class="form-control" id="salary" name="salary" placeholder="Salary">
+                    <label asp-for="salary">Salary</label>
+                    <input type="number" class="form-control" asp-for="salary" placeholder="Salary">
+                    <span asp-validation-for="salary" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label for="age">Age</label>
-                    <input type="number" class="form-control" id="age" name="age" placeholder="Age">
+                    <label asp-for="age">Age</label>
+                    <input type="number" class="form-control" asp-for="age" placeholder="Age">
+                    <span asp-validation-for="age" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label for="HireDate">Hiring Date</label>
-                    <input type="datetime-local" class="form-control" id="HireDate" name="HireDate" placeholder="Hiring Date">
+                    <label asp-for="HireDate">Hiring Date</label>
+                    <input type="datetime-local" class="form-control" asp-for="HireDate" placeholder="Hiring Date">
+                    <span asp-validation-for="HireDate" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label for="selected_department_id">Registered Department</label>
-                    <select id="selected_department_id" name="selected_department_id">
+                    <label asp-for="selected_department_id">Registered Department</label>
+                    <select asp-for="selected_department_id">
                         @foreach (var dep in @Model.available_departments)
                         {
                             <option value="@dep.DepartmentId">@dep.name</option>
@@ -40,8 +45,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="selected_course_id">Registered Course</label>
-                    <select id="selected_course_id" name="selected_course_id">
+                    <label asp-for="selected_course_id">Registered Course</label>
+                    <select asp-for="selected_course_id">
                         @foreach (var crs in @Model.available_courses)
                         {
                             <option value="@crs.CourseId">@crs.name</option>
@@ -49,8 +54,15 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
-                <button class="btn btn-light">Cancel</button>
+                <a asp-controller="Instructor" asp-action="Index" class="btn btn-light">Cancel</a>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts
+{
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}

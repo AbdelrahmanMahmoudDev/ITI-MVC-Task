@@ -99,6 +99,15 @@ namespace Task.Controllers
         [HttpPost]
         public IActionResult SaveNew(InstructorNewVM form_data)
         {
+            if(!ModelState.IsValid)
+            {
+                InstructorNewVM required_data = new InstructorNewVM()
+                {
+                    available_courses = context.Courses.ToList(),
+                    available_departments = context.Departments.ToList(),
+                };
+                return View("Add", required_data);
+            }
             Instructor new_guy = new Instructor()
             {
                 fname = form_data.fname,

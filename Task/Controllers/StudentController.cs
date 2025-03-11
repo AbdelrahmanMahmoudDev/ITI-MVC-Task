@@ -129,6 +129,10 @@ namespace Task.Controllers
         [HttpPost]
         public IActionResult SaveAdd(StudentAddVM form_data)
         {
+            if(!ModelState.IsValid)
+            {
+                return View("Add", form_data);
+            }
             Student new_student = new Student()
             {
                 name = form_data.name,

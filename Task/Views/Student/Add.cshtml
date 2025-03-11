@@ -2,6 +2,13 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+	SelectList dept_options = new SelectList(@Model?.departments, "DepartmentId", "name");
+}
+
+@section Styles
+{
+	<link rel="stylesheet" href="~/assets/vendors/jsgrid/jsgrid.min.css">
+	<link rel="stylesheet" href="~/assets/vendors/jsgrid/jsgrid-theme.min.css">
 }
 
 @model StudentAddVM
@@ -10,50 +17,86 @@
 		<div class="card-body">
 			<h4 class="card-title">Add Student</h4>
 			<p class="card-description"> Please enter the following details</p>
-			<form class="forms-sample" method="post" action="/Student/SaveAdd/">
+			<form class="forms-sample" method="post" asp-controller="Student" asp-action="SaveAdd">
 				<div class="form-group">
-					<label for="name">Name</label>
-					<input type="text" class="form-control" id="name" name="name" placeholder="Name" />
+					<label asp-for="name">Name</label>
+					<input type="text" asp-for="name" class="form-control" placeholder="Name" />
+					<span asp-validation-for="name" class="text-danger"></span>
 				</div>
 				<div class="form-group">
-					<label for="age">Age</label>
-					<input type="number" class="form-control" id="age" name="age" placeholder="Age" />
+					<label asp-for="age">Age</label>
+					<input type="number" asp-for="age" class="form-control" placeholder="Age" />
+					<span asp-validation-for="age" class="text-danger"></span>
 				</div>
 				<div class="form-group">
-					<label for="address">Address</label>
-					<input type="text" class="form-control" id="address" name="address" placeholder="Address" />
+					<label asp-for="address">Address</label>
+					<input type="text" asp-for="address" class="form-control" placeholder="Address" />
+					<span asp-validation-for="age" class="text-danger"></span>
 				</div>
 				<div class="form-group">
-					<label for="selected_department_id">Department</label>
-					<select id="selected_department_id" name="selected_department_id" class="form-select" aria-label="Default select example">
-						@foreach (var deps in @Model.departments)
-						{
-							<option value="@deps.DepartmentId">@deps.name</option>
-						}
+					<label asp-for="selected_department_id">Department</label>
+					<select asp-items="dept_options" asp-for="selected_department_id" class="form-select" aria-label="Default select example">
+						<option value="0">--Select Department--</option>
 					</select>
 				</div>
-				<div class="form-group">
-					<label for="chosen_courses">Registered Courses</label>
-					<div id="chosen_courses" name="chosen_courses">
-						@foreach (var crs in @Model.courses)
-						{
-							<div class="form-check">
-								<label class="form-check-label">
-									<input name="chosen_courses" value="@crs.CourseId" type="checkbox" class="form-check-input"> @crs.name <i class="input-helper"></i>
-
-								</label>
-							</div>
-						}
+				<label>Registered Courses</label>
+				@* <div> *@
+				@* 	@for (int i = 0; i < Model?.courses.Count; i++) *@
+				@* 	{ *@
+				@* 		<div class="form-group"> *@
+				@* 			<div class="form-check"> *@
+				@* 				<label class="form-check-label"> *@
+				@* 					<input id="registered_courses.Key" name="registered_courses.Key" value="@Model?.courses[i].CourseId" course-val type="checkbox" class="form-check-input"> @Model?.courses[i].name <i class="input-helper"></i> *@
+				@* 				</label> *@
+				@* 			</div> *@
+				@* 		</div> *@
+				@* 		<div class="form-group"> *@
+				@* 			<input asp-for="registered_courses.Value" course-val type="number" class="form-control"> *@
+				@* 		</div> *@
+				@* 	} *@
+				@* </div> *@
+				<div class="card">
+					<div class="card-body">
+						<h4 class="card-title">Basic Table</h4>
+						<p class="card-description">A basic example of js-grid</p>
+						<div id="js-grid" class="jsgrid" style="position: relative; height: 500px; width: 100%;"><div class="jsgrid-grid-header jsgrid-header-scrollbar"><table class="jsgrid-table"><tr class="jsgrid-header-row"><th class="jsgrid-header-cell jsgrid-header-sortable" style="width: 150px;">Name</th><th class="jsgrid-header-cell jsgrid-align-right jsgrid-header-sortable" style="width: 50px;">Age</th><th class="jsgrid-header-cell jsgrid-header-sortable" style="width: 200px;">Address</th><th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;">Country</th><th class="jsgrid-header-cell jsgrid-header-sortable" style="width: 100px;">Is Married</th><th class="jsgrid-header-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-mode-button jsgrid-search-mode-button" type="button" title="Switch to searching"></th></tr><tr class="jsgrid-filter-row" style="display: none;"><td class="jsgrid-cell" style="width: 150px;"><input type="text"></td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;"><input type="number"></td><td class="jsgrid-cell" style="width: 200px;"><input type="text"></td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;"><select><option value="0"></option><option value="1">United States</option><option value="2">Canada</option><option value="3">United Kingdom</option><option value="4">France</option><option value="5">Brazil</option><option value="6">China</option><option value="7">Russia</option></select></td><td class="jsgrid-cell" style="width: 100px;"></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-search-button" type="button" title="Search"><input class="jsgrid-button jsgrid-clear-filter-button" type="button" title="Clear filter"></td></tr><tr class="jsgrid-insert-row" style=""><td class="jsgrid-cell" style="width: 150px;"><input type="text"></td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;"><input type="number"></td><td class="jsgrid-cell" style="width: 200px;"><input type="text"></td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;"><select><option value="0"></option><option value="1">United States</option><option value="2">Canada</option><option value="3">United Kingdom</option><option value="4">France</option><option value="5">Brazil</option><option value="6">China</option><option value="7">Russia</option></select></td><td class="jsgrid-cell" style="width: 100px;"></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-insert-button" type="button" title="Insert"></td></tr></table></div><div class="jsgrid-grid-body" style="height: 299.2px;"><table class="jsgrid-table"><tbody><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Otto Clay</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">61</td><td class="jsgrid-cell" style="width: 200px;">Ap #897-1459 Quam Avenue</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">China</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-alt-row"><td class="jsgrid-cell" style="width: 150px;">Connor Johnston</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">73</td><td class="jsgrid-cell" style="width: 200px;">Ap #370-4647 Dis Av.</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Russia</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Lacey Hess</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">29</td><td class="jsgrid-cell" style="width: 200px;">Ap #365-8835 Integer St.</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Russia</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-alt-row"><td class="jsgrid-cell" style="width: 150px;">Timothy Henson</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">78</td><td class="jsgrid-cell" style="width: 200px;">911-5143 Luctus Ave</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">United States</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Ramona Benton</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">43</td><td class="jsgrid-cell" style="width: 200px;">Ap #614-689 Vehicula Street</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Brazil</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input" checked="checked"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-alt-row"><td class="jsgrid-cell" style="width: 150px;">Ezra Tillman</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">51</td><td class="jsgrid-cell" style="width: 200px;">P.O. Box 738, 7583 Quisque St.</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">United States</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input" checked="checked"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Dante Carter</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">59</td><td class="jsgrid-cell" style="width: 200px;">P.O. Box 976, 6316 Lorem, St.</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">United States</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-alt-row"><td class="jsgrid-cell" style="width: 150px;">Christopher Mcclure</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">58</td><td class="jsgrid-cell" style="width: 200px;">847-4303 Dictum Av.</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">United States</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input" checked="checked"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Ruby Rocha</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">62</td><td class="jsgrid-cell" style="width: 200px;">5212 Sagittis Ave</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Canada</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-alt-row"><td class="jsgrid-cell" style="width: 150px;">Imelda Hardin</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">39</td><td class="jsgrid-cell" style="width: 200px;">719-7009 Auctor Av.</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Brazil</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Jonah Johns</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">28</td><td class="jsgrid-cell" style="width: 200px;">P.O. Box 939, 9310 A Ave</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Brazil</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-alt-row"><td class="jsgrid-cell" style="width: 150px;">Herman Rosa</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">49</td><td class="jsgrid-cell" style="width: 200px;">718-7162 Molestie Av.</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Russia</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input" checked="checked"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Arthur Gay</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">20</td><td class="jsgrid-cell" style="width: 200px;">5497 Neque Street</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Russia</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-alt-row"><td class="jsgrid-cell" style="width: 150px;">Xena Wilkerson</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">63</td><td class="jsgrid-cell" style="width: 200px;">Ap #303-6974 Proin Street</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">United States</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input" checked="checked"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr><tr class="jsgrid-row"><td class="jsgrid-cell" style="width: 150px;">Lilah Atkins</td><td class="jsgrid-cell jsgrid-align-right" style="width: 50px;">33</td><td class="jsgrid-cell" style="width: 200px;">622-8602 Gravida Ave</td><td class="jsgrid-cell jsgrid-align-center" style="width: 100px;">Brazil</td><td class="jsgrid-cell" style="width: 100px;"><div class="form-check mt-0"><label class="form-check-label"><input type="checkbox" class="form-check-input" checked="checked"><i class="input-helper"></i></label></div></td><td class="jsgrid-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"><input class="jsgrid-button jsgrid-edit-button" type="button" title="Edit"><input class="jsgrid-button jsgrid-delete-button" type="button" title="Delete"></td></tr></tbody></table></div><div class="jsgrid-pager-container"><div class="jsgrid-pager">Pages: <span class="jsgrid-pager-nav-button jsgrid-pager-nav-inactive-button"><a href="javascript:void(0);">First</a></span> <span class="jsgrid-pager-nav-button jsgrid-pager-nav-inactive-button"><a href="javascript:void(0);">Prev</a></span> <span class="jsgrid-pager-page jsgrid-pager-current-page">1</span><span class="jsgrid-pager-page"><a href="javascript:void(0);">2</a></span><span class="jsgrid-pager-page"><a href="javascript:void(0);">3</a></span><span class="jsgrid-pager-page"><a href="javascript:void(0);">4</a></span><span class="jsgrid-pager-page"><a href="javascript:void(0);">5</a></span><span class="jsgrid-pager-nav-button"><a href="javascript:void(0);">...</a></span> <span class="jsgrid-pager-nav-button"><a href="javascript:void(0);">Next</a></span> <span class="jsgrid-pager-nav-button"><a href="javascript:void(0);">Last</a></span> &nbsp;&nbsp; 1 of 7 </div></div><div class="jsgrid-load-shader" style="display: none; position: absolute; inset: 0px; z-index: 1000;"></div><div class="jsgrid-load-panel" style="display: none; position: absolute; top: 50%; left: 50%; z-index: 1000;">Please, wait...</div></div>
 					</div>
 				</div>
 				<div class="form-group">
 					<button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
-					<button class="btn btn-light">Cancel</button>
+					<a asp-controller="Student" asp-action="Index" class="btn btn-light">Cancel</a>
 				</div>
 				<div class="form-group">
-					<a href="/Student/index" class="btn btn-gradient-primary">Go to table</a>
+					<a asp-controller="Student" asp-action="Index" class="btn btn-gradient-primary">Go to table</a>
 				</div>
 			</form>
 		</div>
 	</div>
 </div>
+
+@section Scripts
+{
+	<script src="~/assets/vendors/jsgrid/jsgrid.min.js"></script>
+	<script src="~/assets/js/js-grid.js"></script>
+	<script src="~/assets/js/db.js"></script>
+}
+
+<div class="form-group">
+	<label asp-for="age">Age</label>
+	<input type="number" asp-for="age" class="form-control" placeholder="Age" />
+	<span asp-validation-for="age" class="text-danger"></span>
+</div>
+
+<script>
+	const course_grade_element = document.createElement("div");
+	course_grade_element.classList.add("form-group");
+
+	const checkbox_collection = document.querySelectorAll("input[course-val]");
+	for(const checkbox of checkbox_collection) {
+		checkbox.addEventListener("click", e => {
+			if(checkbox.checked) {
+				console.log("Hey now, brown cow");
+			}
+		});
+	}
+</script>
