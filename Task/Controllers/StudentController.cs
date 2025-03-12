@@ -152,24 +152,8 @@ namespace Task.Controllers
                 return StatusCode(500, $"An error occured while saving the student\n{ex.InnerException?.Message}");
             }
 
-            if (form_data.chosen_courses?.Any() == true)
-            {
-                var student_chosen_courses = form_data.chosen_courses.Select(crs => new CourseStudents()
-                {
-                    CourseId = crs,
-                    StudentId = new_student.StudentId,
-                    Degree = 0
-                });
-                Context.AddRange(student_chosen_courses);
-            }
-            try
-            {
-                Context.SaveChanges();
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, $"An error occured while saving the student\n{ex.InnerException?.Message}");
-            }
+            // TODO: Save new student courses
+
             return RedirectToAction("Index");
         }
         public IActionResult Delete(int id)
