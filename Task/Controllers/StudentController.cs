@@ -133,26 +133,32 @@ namespace Task.Controllers
             {
                 return View("Add", form_data);
             }
-            Student new_student = new Student()
+
+            // We assume each student MUST have atleast one student
+            var newStudent = new Student
             {
                 name = form_data.name,
-                image ="/images/male.jpg",
+                image = "/images/male.jpg",
                 age = form_data.age,
                 address = form_data.address,
-                DepartmentId = form_data.selected_department_id
+                DepartmentId = form_data.selected_department_id,
+                CourseStudents = form_data.course_details.Select(course => new CourseStudents
+                {
+                    CourseId = course.course_id,
+                    Degree = course.Degree
+                }).ToList()
             };
 
-            Context.Students.Add(new_student);
+            Context.Students.Add(newStudent);
+
             try
             {
                 Context.SaveChanges();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occured while saving the student\n{ex.InnerException?.Message}");
+                return StatusCode(500, $"Error saving student and courses: {ex.InnerException?.Message}");
             }
-
-            // TODO: Save new student courses
 
             return RedirectToAction("Index");
         }
