@@ -1,5 +1,4 @@
 using Task.Errors;
-using Task.Services;
 
 namespace Task
 {
@@ -13,8 +12,6 @@ namespace Task
             builder.Services.AddControllersWithViews();
             builder.Services.AddExceptionHandler<CustomException>();
             builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddScoped<IFileService, FileService>();
-
 
             builder.Services.AddSession(opt =>
             {

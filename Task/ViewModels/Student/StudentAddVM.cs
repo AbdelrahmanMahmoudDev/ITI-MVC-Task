@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.Identity.Client;
 using Task.Models;
 
 namespace Task.ViewModels.Student
@@ -20,8 +19,6 @@ namespace Task.ViewModels.Student
         [Range(18, 40, ErrorMessage = "Student age must be between 18 and 40")]
         public int? age { get; set; }
         public string? address { get; set; }
-        public string ImagePath { get; set; } = "";
-        public IFormFile ImageFile { get; set; }
         public int selected_department_id { get; set; }
         public List<CourseDetails> course_details { get; set; } = new List<CourseDetails>();
         public List<Department> departments { get; set; } = new List<Department>();

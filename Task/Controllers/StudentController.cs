@@ -5,19 +5,12 @@ using Task.Models;
 using Task.ViewModels.Student;
 using Task.ViewModels.Instructor;
 using System.Linq;
-using Task.Services;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Task.Controllers
 {
     public class StudentController : Controller
     {
         SchoolContext Context = new SchoolContext();
-        private IFileService _FileService = new FileService();
-        public StudentController(IFileService FileService)
-        {
-            _FileService = FileService;
-        }
         public IActionResult Index()
         {
             var students = Context.Students
@@ -35,7 +28,7 @@ namespace Task.Controllers
                 .Select(s => new StudentDetailsVM
                 {
                     name = s.Student.name,
-                    image = s.Student.ImagePath,
+                    image = s.Student.image,
                     age = s.Student.age,
                     address = s.Student.address,
                     dept_name = s.Student.Department.name,
@@ -134,7 +127,7 @@ namespace Task.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveAdd(StudentAddVM form_data)
+        public IActionResult SaveAdd(StudentAddVM form_data)
         {
             if(!ModelState.IsValid)
             {
@@ -145,6 +138,7 @@ namespace Task.Controllers
             var newStudent = new Student
             {
                 name = form_data.name,
+                image = "/images/male.jpg",
                 age = form_data.age,
                 address = form_data.address,
                 DepartmentId = form_data.selected_department_id,
@@ -155,21 +149,11 @@ namespace Task.Controllers
                 }).ToList()
             };
 
-            const int OneMegaByte = 1024 * 1024;
-            if(!form_data.ImagePath.IsNullOrEmpty())
-            {
-                if(form_data.ImagePath.Length > OneMegaByte)
-                {
-                    throw new InvalidOperationException("File size cannot exceed 1 MB");
-                }
-                newStudent.ImagePath = await _FileService.SaveFile(newStudent.ImageFile, "Images", new string[] { ".jpg", ".jpeg", ".png" });  
-            }
-
             Context.Students.Add(newStudent);
 
             try
             {
-                await Context.SaveChangesAsync();
+                Context.SaveChanges();
             }
             catch (Exception ex)
             {
