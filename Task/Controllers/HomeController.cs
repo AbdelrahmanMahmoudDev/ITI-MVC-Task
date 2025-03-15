@@ -15,7 +15,7 @@ namespace Task.Controllers
 
         public IActionResult Index()
         {
-            ViewData["last_visited"] = HttpContext.Session.GetString("last_student");
+            //ViewData["last_visited"] = HttpContext.Session.GetString("last_student");
             //HttpContext.Session.GetString("last_student");
             return View();
         }

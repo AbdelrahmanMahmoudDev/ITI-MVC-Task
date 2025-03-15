@@ -42,7 +42,7 @@ namespace Task.Controllers
                     .Include(s => s.Course)
                     .ToDictionary(c => c.Course.name, c => c.Degree);
             }
-            HttpContext.Session.SetString("last_student", student.name ?? "Something's wrong");
+            //HttpContext.Session.SetString("last_student", student.name ?? "Something's wrong");
             return View(student);
         }
         public IActionResult Edit(int id)
@@ -127,6 +127,7 @@ namespace Task.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult SaveAdd(StudentAddVM form_data)
         {
             if(!ModelState.IsValid)
@@ -138,7 +139,6 @@ namespace Task.Controllers
             var newStudent = new Student
             {
                 name = form_data.name,
-                image = "/images/male.jpg",
                 age = form_data.age,
                 address = form_data.address,
                 DepartmentId = form_data.selected_department_id,
@@ -148,6 +148,11 @@ namespace Task.Controllers
                     Degree = course.Degree
                 }).ToList()
             };
+
+            if(form_data.image != null)
+            {
+                // save image path in user
+            }
 
             Context.Students.Add(newStudent);
 

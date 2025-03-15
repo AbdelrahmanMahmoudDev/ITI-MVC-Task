@@ -14,7 +14,7 @@
 		<div class="card-body">
 			<h4 class="card-title">Add Student</h4>
 			<p class="card-description"> Please enter the following details</p>
-			<form class="forms-sample" method="post" asp-controller="Student" asp-action="SaveAdd">
+			<form class="forms-sample" method="post" asp-controller="Student" asp-action="SaveAdd" enctype="multipart/form-data">
 				<div class="form-group">
 					<label asp-for="name">Name</label>
 					<input type="text" asp-for="name" class="form-control" placeholder="Name" />
@@ -30,6 +30,18 @@
 					<input type="text" asp-for="address" class="form-control" placeholder="Address" />
 					<span asp-validation-for="age" class="text-danger"></span>
 				</div>
+				@* <div class="form-group">  *@
+				@*  	<label asp-for="image">File upload</label>  *@
+				@*  	<input type="file" asp-for="image" class="file-upload-default">  *@
+				@*  	<div class="input-group col-xs-12">  *@
+				@*  		<input type="text" class="form-control file-upload-info" disabled="" placeholder="Upload Image">  *@
+				@*  		<span class="input-group-append">  *@
+				@*  			<button class="file-upload-browse btn btn-gradient-primary" type="button">Upload</button>  *@
+				@*  		</span>  *@
+				@*  	</div>  *@
+				@*  </div> *@
+				<label asp-for="image">Choose a profile picture:</label>
+				<input type="file" asp-for="image" />
 				<div class="form-group">
 					<label asp-for="selected_department_id">Department</label>
 					<select asp-items="@(new SelectList(Model.departments, "DepartmentId", "name"))" asp-for="selected_department_id" class="form-select" aria-label="Default select example">
@@ -66,6 +78,11 @@
 		</div>
 	</div>
 </div>
+
+@section Scripts
+{
+	<script src="~/assets/js/file-upload.js"></script>
+}
 
 <script>
 	function getRowHtml(index) {

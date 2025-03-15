@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
 using Task.Errors;
+using Task.Utilities;
 
 namespace Task
 {
@@ -11,15 +14,13 @@ namespace Task
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddExceptionHandler<CustomException>();
-            builder.Services.AddDistributedMemoryCache();
-
-            builder.Services.AddSession(opt =>
+            builder.Services.Configure<FormOptions>(options =>
             {
-                opt.IdleTimeout = TimeSpan.FromDays(2);
+                options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB max file size
             });
-            
-            var app = builder.Build();
 
+            var app = builder.Build();
+            FileUtility.WebRootPath = app.Environment.WebRootPath;
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -32,8 +33,6 @@ namespace Task
             app.UseRouting();
 
             app.UseAuthorization();
-
-            app.UseSession();
 
             app.MapStaticAssets();
             app.MapControllerRoute(
