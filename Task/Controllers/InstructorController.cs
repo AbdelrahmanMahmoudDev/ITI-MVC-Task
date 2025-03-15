@@ -29,7 +29,7 @@ namespace Task.Controllers
                                         fname = i.fname,
                                         lname = i.lname,
                                         full_name = i.fname + " " + i.lname,
-                                        image_path = i.image,
+                                        image_path = i.ImagePath,
                                         hire_date = new DateTime(i.HireDate.Value.Year, i.HireDate.Value.Month,                                                i.HireDate.Value.Day),
                                         salary = i.salary,
                                         age = i.age
@@ -113,7 +113,7 @@ namespace Task.Controllers
                 fname = form_data.fname,
                 lname = form_data.lname,
                 salary = form_data.salary,
-                image = "/images/male.jpg",
+                ImagePath = "/images/male.jpg",
                 age = form_data.age,
                 HireDate = new DateTime(form_data.HireDate.Value.Year,
                 form_data.HireDate.Value.Month,

@@ -6,7 +6,9 @@ namespace Task.Models
     {
         public int StudentId { get; set; }
         public string name { get; set; } = "";
-        public string? image { get; set; }
+        [NotMapped]
+        public IFormFile? ImageFile { get; set; }
+        public string? ImagePath { get; set; }
         public int? age { get; set; }
         public string? address { get; set; }
 
