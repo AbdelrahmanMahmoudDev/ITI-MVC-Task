@@ -5,6 +5,7 @@ using Task.Models;
 using Task.ViewModels.Student;
 using Task.ViewModels.Instructor;
 using System.Linq;
+using Task.Utilities;
 
 namespace Task.Controllers
 {
@@ -128,7 +129,7 @@ namespace Task.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SaveAdd(StudentAddVM form_data)
+        public async Task<IActionResult> SaveAdd(StudentAddVM form_data)
         {
             if(!ModelState.IsValid)
             {
@@ -151,14 +152,14 @@ namespace Task.Controllers
 
             if(form_data.image != null)
             {
-                // save image path in user
+                newStudent.image = await FileUtility.SaveFile(form_data.image, "images/students", [".jpg", ".jpeg", ".png"]);
             }
 
             Context.Students.Add(newStudent);
 
             try
             {
-                Context.SaveChanges();
+                await Context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -183,6 +184,9 @@ namespace Task.Controllers
                 Context.Students.Remove(target);
                 Context.SaveChanges();
             }
+
+            // Delete file in server asset store
+            FileUtility.DeleteFile(target.image);
 
             return RedirectToAction("Index");
         }
