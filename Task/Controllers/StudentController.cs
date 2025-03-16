@@ -15,8 +15,8 @@ namespace Task.Controllers
         public IActionResult Index()
         {
             var students = Context.Students
-                                  .Include(studs=>studs.Department)
-                                  .ToList();    
+                                  .Include(studs => studs.Department)
+                                  .ToList();
             return View(students);
         }
         public IActionResult Details(int id)
@@ -51,29 +51,50 @@ namespace Task.Controllers
             var student = Context.Students
                 .Where(s => s.StudentId == id)
                 .Include(s => s.Department)
-                .Select(s => new StudentEditVM
+                .Select(s => new StudentAddVM
                 {
+                    id = id,
+                    name = s.name,
+                    age = s.age,
                     address = s.address,
+                    ImagePath = s.image,
                     selected_department_id = s.DepartmentId,
-                    selected_department_name = s.Department.name,
                 })
                 .FirstOrDefault();
 
-            if(student != null)
+            if (student != null)
             {
-                student.registered_courses = Context.CourseStudents
-                        .Where(c => c.StudentId == id)
-                        .Include(s => s.Course)
-                        .ToDictionary(c => c.Course.name, c => c.Degree);
+                student.course_details = Context.CourseStudents
+                    .Where(crs => crs.StudentId == id)
+                    .Include(crs => crs.Course)
+                    .Select(crs => new CourseDetails() { course_id = (int)crs.CourseId, CourseName = crs.Course.name, Degree = crs.Degree }).ToList();
                 student.departments = Context.Departments.ToList();
                 student.courses = Context.Courses.ToList();
-                student.student_id = id;
             }
             return View(student);
         }
         [HttpPost]
-        public IActionResult SaveEdit(StudentEditVM form_data, List<int> selected_courses, int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveEdit(StudentAddVM FormData, int id)
         {
+            if(!ModelState.IsValid)
+            {
+                FormData.id = id;
+                FormData.age = Context.Students.Find(id).age;
+                FormData.departments = Context.Departments.ToList();
+                FormData.courses = Context.Courses.ToList();
+                FormData.course_details = Context.CourseStudents
+                    .Where(crs => crs.StudentId == id)
+                    .Include(crs => crs.Course)
+                    .Select(crs => new CourseDetails
+                    {
+                        course_id = (int)crs.CourseId,
+                        CourseName = crs.Course.name,
+                        Degree = crs.Degree
+                    })
+                    .ToList();
+                return View("Edit", FormData);
+            }
             var curr_student = Context.Students
                 .Include(s => s.CourseStudents)
                 .FirstOrDefault(s => s.StudentId == id);
@@ -83,37 +104,41 @@ namespace Task.Controllers
                 return NotFound("Student does not exist.");
             }
 
-            curr_student.DepartmentId = form_data.selected_department_id;
-            curr_student.address = form_data.address;
-
-            Context.SaveChanges(); 
-            var existing_courses = curr_student.CourseStudents.ToList();
-
-            foreach (var existing in existing_courses)
+            curr_student.name = FormData.name;
+            if (FormData.image != null)
             {
-                if (!selected_courses.Contains((int)existing.CourseId))
-                {
-                    Context.CourseStudents.Remove(existing);
-                }
+                curr_student.image = await FileUtility.SaveFile(FormData.image, "images/students", [".jpg", ".jpeg", ".png"]);
             }
-
-            foreach (var crs_id in selected_courses)
+            curr_student.address = FormData.address;
+            curr_student.DepartmentId = FormData.selected_department_id;
+            curr_student.address = FormData.address;
+            if (FormData.course_details.Any())
             {
-                if (!existing_courses.Any(c => c.CourseId == crs_id))
+                var ExistingCourses = curr_student.CourseStudents;
+                foreach (var Course in ExistingCourses)
                 {
-                    Context.CourseStudents.Add(new CourseStudents
+                    if (Course.StudentId == id)
                     {
-                        CourseId = crs_id,
+                        Context.CourseStudents.Remove(Course);
+                    }
+                }
+
+                foreach (var NewCourse in FormData.course_details)
+                {
+                    Context.CourseStudents.Add(new CourseStudents()
+                    {
                         StudentId = id,
-                        Degree = 0
+                        CourseId = NewCourse.course_id,
+                        Degree = NewCourse.Degree
                     });
                 }
+
             }
 
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
-        
+
         public IActionResult Add()
         {
             var departments = Context.Departments.ToList();
@@ -131,7 +156,7 @@ namespace Task.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveAdd(StudentAddVM form_data)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View("Add", form_data);
             }
@@ -150,7 +175,7 @@ namespace Task.Controllers
                 }).ToList()
             };
 
-            if(form_data.image != null)
+            if (form_data.image != null)
             {
                 newStudent.image = await FileUtility.SaveFile(form_data.image, "images/students", [".jpg", ".jpeg", ".png"]);
             }
@@ -173,21 +198,18 @@ namespace Task.Controllers
             var target = Context.Students.Find(id);
             var courses = Context.CourseStudents.Where(c => c.StudentId == id).ToList();
 
-            if(courses != null)
+            if (courses != null)
             {
                 Context.CourseStudents.RemoveRange(courses);
+
+                if (target != null)
+                {
+                    Context.Students.Remove(target);
+                    // Delete file in server asset store
+                    FileUtility.DeleteFile(target.image);
+                }
                 Context.SaveChanges();
             }
-
-            if (target != null)
-            {
-                Context.Students.Remove(target);
-                Context.SaveChanges();
-            }
-
-            // Delete file in server asset store
-            FileUtility.DeleteFile(target.image);
-
             return RedirectToAction("Index");
         }
     }

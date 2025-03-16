@@ -1,68 +1,193 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@{
-}
-@model StudentEditVM
+@model StudentAddVM
 <div class="col-md-6 grid-margin stretch-card">
 	<div class="card">
 		<div class="card-body">
-			<h4 class="card-title">Edit Student</h4>
-			<p class="card-description"> Please change any of the following details</p>
-			<form class="forms-sample" method="post" action="/Student/SaveEdit/@Model.student_id">
+			<h4 class="card-title">Add Student</h4>
+			<p class="card-description"> Please enter the following details</p>
+			</tr>
+			<form class="forms-sample" method="post" asp-controller="Student" asp-action="SaveEdit" asp-route-id="@Model.id" enctype="multipart/form-data">
 				<div class="form-group">
-					<label for="address">Address</label>
-					<input type="text" class="form-control" id="address" name="address" placeholder="Address" value="@Model.address" />
+					<label asp-for="name">Name</label>
+					<input type="text" asp-for="name" class="form-control" placeholder="Name" />
+					<span asp-validation-for="name" class="text-danger"></span>
 				</div>
-				<div class="form-group" data-select2-id="7">
-					<label for="selected_department_id">Registered Department</label>
-					<select id="selected_department_id" name="selected_department_id" class="form-select" aria-label="Default select example">
-						@foreach (var deps in @Model.departments)
-						{
-							@if(deps.DepartmentId == @Model.selected_department_id)
-							{
-								<option selected value="@deps.DepartmentId">@deps.name</option>
-							}
-							else
-							{
-								<option value="@deps.DepartmentId">@deps.name</option>
-							}
-						}
+				<div class="form-group">
+					<label asp-for="age">Age</label>
+					<input disabled type="number" asp-for="age" class="form-control" placeholder="Age" />
+					<span asp-validation-for="age" class="text-danger"></span>
+				</div>
+				<div class="form-group">
+					<label asp-for="address">Address</label>
+					<input type="text" asp-for="address" class="form-control" placeholder="Address" />
+					<span asp-validation-for="age" class="text-danger"></span>
+				</div>
+				<div class="form-group image-upload-section">
+					<label asp-for="image">Profile Picture</label>
+					<input type="file" asp-for="image" class="file-upload-default">
+					<img id="preview-image" src="@Model.ImagePath" width = "50" alt="Profile Picture" />
+					<div class="input-group col-xs-12">
+						<input id="file-path-section" type="text" class="form-control file-upload-info" disabled="" placeholder="Upload Image">
+						<span class="input-group-append">
+							<button id="img-upload-btn" class="file-upload-browse btn btn-gradient-primary" type="button">Upload</button>
+						</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label asp-for="selected_department_id">Department</label>
+					<select asp-items="@(new SelectList(Model.departments, "DepartmentId", "name"))" asp-for="selected_department_id" class="form-select" aria-label="Default select example">
+						<option value="0">--Select Department--</option>
 					</select>
 				</div>
-				 <div class="form-group">
-					<label for="registered_courses">Registered Courses</label>
-					<div id="registered_courses" name="registered_courses">
-						@foreach (var crs in @Model.courses)
-						{
-							@if(@Model.registered_courses.ContainsKey(crs.name))
-							{
-								<div class="form-check">
-									<label class="form-check-label">
-										<input name="selected_courses" value="@crs.CourseId" checked type="checkbox" class="form-check-input"> @crs.name <i class="input-helper"></i>
-									</label>
-								</div>
-							}
-							else
-							{
-								<div class="form-check">
-									<label class="form-check-label">
-										<input name="selected_courses" value="@crs.CourseId" type="checkbox" class="form-check-input"> @crs.name <i class="input-helper"></i>
-
-									</label>
-								</div>
-							}
-				         } 
-				     </div> 
-				 </div> 
-				 <div class="form-group">
-					<button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
-					<button class="btn btn-light">Cancel</button>
-				 </div>
+				<label>Registered Courses</label>
+				<div class="card">
+					<div class="card-body">
+						<div class="table-responsive">
+							<table class="table table-hover">
+								<thead>
+									<tr>
+										<th>Course</th>
+										<th>Degree</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody id="courseRows">
+									@if (Model.course_details.Any())
+									{
+										@foreach (var course in Model.course_details)
+										{
+											<tr>
+												<td>
+													<select name="course_details[${index}].course_id" class="form-select">
+														<option value="@course.course_id">@course.CourseName</option>
+														@foreach (var crs in Model.courses)
+														{
+															<text>
+															<option value="@crs.CourseId">@crs.name</option>
+															</text>
+														}
+													</select>
+												</td>
+												<td>
+													<input type="number" value="@course.Degree" name="course_details[${index}].Degree" class="form-control" placeholder="Degree" min="0" max="100" />
+												</td>
+												<td>
+													<button type="button" class="btn btn-gradient-danger" onclick="removeCourseRow(this)">Delete</button>
+												</td>
+											</tr>
+										}
+									}
+								</tbody>
+							</table>
+							<button type="button" onclick="addCourseRow()" class="btn btn-gradient-success me-2">Add Course</button>
+						</div>
+					</div>
+				</div>
 				<div class="form-group">
-					<a href="/Student/index" class="btn btn-gradient-primary">Go to table</a>
+					<button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
+					<a asp-controller="Student" asp-action="Index" class="btn btn-light">Cancel</a>
+				</div>
+				<div class="form-group">
+					<a asp-controller="Student" asp-action="Index" class="btn btn-gradient-primary">Go to table</a>
 				</div>
 			</form>
 		</div>
 	</div>
 </div>
+
+@section Scripts
+{
+	<script src="~/assets/js/file-upload.js"></script>
+}
+
+<script>
+	document.getElementById("image").addEventListener("change", e => {
+		if(e.target.files.length > 0) {
+			let reader = new FileReader();
+			reader.onload = e => {
+				let img = document.getElementById("preview-image");
+				img.src = e.target.result;
+			};
+			reader.readAsDataURL(e.target.files[0]);
+		}
+	});
+	function getRowHtml(index) {
+		return `
+			<tr>
+				<td>
+					<select name="course_details[${index}].course_id" class="form-select">
+						<option value="0">--Select Course--</option>
+	@foreach (var course in Model.courses)
+	{
+		<text><option value="@course.CourseId">@course.name</option></text>
+	}
+					</select>
+				</td>
+				<td>
+					<input type="number" name="course_details[${index}].Degree" class="form-control" placeholder="Degree" min="0" max="100" />
+				</td>
+				<td>
+					<button type="button" class="btn btn-gradient-danger" onclick="removeCourseRow(this)">Delete</button>
+				</td>
+			</tr>
+		`;
+	}
+
+	function addCourseRow() {
+		const tbody = document.getElementById('courseRows');
+		const rowCount = tbody.children.length;
+		tbody.insertAdjacentHTML('beforeend', getRowHtml(rowCount)); // add a "beforeend" indicator to reindex rows accordingly
+		updateDropdowns();
+	}
+
+	function removeCourseRow(button) {
+		const row = button.closest('tr');
+		row.remove();
+		reindexRows();
+		updateDropdowns();
+	}
+
+	// This reindexes by looping over all rows
+	// and inserting the correct sequential index into each
+	function reindexRows() {
+		const tbody = document.getElementById('courseRows');
+		const rows = tbody.getElementsByTagName('tr');
+		for (let i = 0; i < rows.length; i++) {
+			const select = rows[i].querySelector('select');
+			const input = rows[i].querySelector('input[type="number"]');
+			select.name = `course_details[${i}].course_id`;
+			input.name = `course_details[${i}].Degree`;
+		}
+	}
+
+	// Prevent duplicate course selections
+		function updateDropdowns() {
+			const selects = document.querySelectorAll('#courseRows select');
+			const selectedValues = Array.from(selects)
+				.map(s => s.value)
+				.filter(v => v !== "0");
+			selects.forEach(select => {
+				const options = select.querySelectorAll('option');
+				options.forEach(opt => {
+					if (opt.value !== "0" && selectedValues.includes(opt.value) && opt.value !== select.value) {
+						opt.disabled = true;
+					} else {
+						opt.disabled = false;
+					}
+				});
+			});
+		}
+
+		// Event delegation for select changes
+		document.getElementById('courseRows').addEventListener('change', function (e) {
+			if (e.target.tagName === 'SELECT') {
+				updateDropdowns();
+			}
+		});
+
+	window.onload = function () {
+		addCourseRow();
+	};
+</script>
