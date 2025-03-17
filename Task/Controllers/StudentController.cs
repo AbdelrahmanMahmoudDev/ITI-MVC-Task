@@ -6,6 +6,7 @@ using Task.ViewModels.Student;
 using Task.ViewModels.Instructor;
 using System.Linq;
 using Task.Utilities;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Task.Controllers
 {
@@ -77,7 +78,7 @@ namespace Task.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveEdit(StudentAddVM FormData, int id)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 FormData.id = id;
                 FormData.age = Context.Students.Find(id).age;
@@ -211,6 +212,19 @@ namespace Task.Controllers
                 Context.SaveChanges();
             }
             return RedirectToAction("Index");
+        }
+
+        public ActionResult Search(string searchTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                return PartialView("_SearchResults", Context.Students.ToList());
+            }
+            var results = Context.Students
+                .Where(e => e.name.Contains(searchTerm))
+                .Include(e => e.Department)
+                .ToList();
+            return PartialView("_SearchResults", results);
         }
     }
 }
