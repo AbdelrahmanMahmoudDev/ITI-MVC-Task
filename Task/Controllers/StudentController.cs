@@ -7,19 +7,27 @@ using Task.ViewModels.Instructor;
 using System.Linq;
 using Task.Utilities;
 using Microsoft.IdentityModel.Tokens;
+using Task.Repositories;
+using System.Diagnostics;
+using System.Net.WebSockets;
 
 namespace Task.Controllers
 {
     public class StudentController : Controller
     {
         SchoolContext Context = new SchoolContext();
+        StudentRepository StudentRepo = new StudentRepository();
         public IActionResult Index()
         {
-            var students = Context.Students
-                                  .Include(studs => studs.Department)
-                                  .ToList();
-            return View(students);
+            //var students = Context.Students
+            //                      .Include(studs => studs.Department)
+            //                      .ToList();
+
+            var Students = StudentRepo.GetAll(new List<string>{ "Department" }).ToList();
+
+            return View("Index", Students);
         }
+        // TODO: CourseStudent Repo
         public IActionResult Details(int id)
         {
             var student = Context.CourseStudents
@@ -49,19 +57,40 @@ namespace Task.Controllers
         }
         public IActionResult Edit(int id)
         {
-            var student = Context.Students
-                .Where(s => s.StudentId == id)
-                .Include(s => s.Department)
-                .Select(s => new StudentAddVM
-                {
-                    id = id,
-                    name = s.name,
-                    age = s.age,
-                    address = s.address,
-                    ImagePath = s.image,
-                    selected_department_id = s.DepartmentId,
-                })
-                .FirstOrDefault();
+            //var student = Context.Students
+            //    .Where(s => s.StudentId == id)
+            //    .Include(s => s.Department)
+            //    .Select(s => new StudentAddVM
+            //    {
+            //        id = id,
+            //        name = s.name,
+            //        age = s.age,
+            //        address = s.address,
+            //        ImagePath = s.image,
+            //        selected_department_id = s.DepartmentId,
+            //    })
+            //    .FirstOrDefault();
+
+            Student Target = null;
+            try
+            {
+                Target = StudentRepo.GetById(id, new List<string> { "Department" });
+            }
+            catch(InvalidOperationException e)
+            {
+                Debug.WriteLine($"Error: {e.Message}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+
+            var student = new StudentAddVM()
+            {
+                id = id,
+                name = Target.name,
+                age = Target.age,
+                address = Target.address,
+                ImagePath = Target.image,
+                selected_department_id = Target.DepartmentId,
+            };
 
             if (student != null)
             {
@@ -81,7 +110,7 @@ namespace Task.Controllers
             if (!ModelState.IsValid)
             {
                 FormData.id = id;
-                FormData.age = Context.Students.Find(id).age;
+                FormData.age = StudentRepo.GetById(id).age;
                 FormData.departments = Context.Departments.ToList();
                 FormData.courses = Context.Courses.ToList();
                 FormData.course_details = Context.CourseStudents
@@ -96,9 +125,11 @@ namespace Task.Controllers
                     .ToList();
                 return View("Edit", FormData);
             }
-            var curr_student = Context.Students
-                .Include(s => s.CourseStudents)
-                .FirstOrDefault(s => s.StudentId == id);
+            //var curr_student = Context.Students
+            //    .Include(s => s.CourseStudents)
+            //    .FirstOrDefault(s => s.StudentId == id);
+
+            var curr_student = StudentRepo.GetById(id, new List<string> { "CourseStudents" });
 
             if (curr_student == null)
             {
@@ -136,7 +167,7 @@ namespace Task.Controllers
 
             }
 
-            await Context.SaveChangesAsync();
+            await StudentRepo.UploadToDatabaseAsync(); 
             return RedirectToAction("Index");
         }
 
@@ -181,11 +212,12 @@ namespace Task.Controllers
                 newStudent.image = await FileUtility.SaveFile(form_data.image, "images/students", [".jpg", ".jpeg", ".png"]);
             }
 
-            Context.Students.Add(newStudent);
-
+            //Context.Students.Add(newStudent);
+            StudentRepo.Create(newStudent);
             try
             {
-                await Context.SaveChangesAsync();
+                await StudentRepo.UploadToDatabaseAsync();
+               // await Context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -196,7 +228,8 @@ namespace Task.Controllers
         }
         public IActionResult Delete(int id)
         {
-            var target = Context.Students.Find(id);
+            //var target = StudentRepo.GetById(id);
+           var target = Context.Students.Find(id);
             var courses = Context.CourseStudents.Where(c => c.StudentId == id).ToList();
 
             if (courses != null)
@@ -205,15 +238,18 @@ namespace Task.Controllers
 
                 if (target != null)
                 {
-                    Context.Students.Remove(target);
+                    //StudentRepo.Delete(target);
+                    Context.Students.Remove(target); // PROBLEMATIC: Why does this work but not the repo func ??
                     // Delete file in server asset store
                     FileUtility.DeleteFile(target.image);
                 }
+                //StudentRepo.UploadToDatabase();
                 Context.SaveChanges();
             }
             return RedirectToAction("Index");
         }
 
+        // TODO: Use StudentService
         public ActionResult Search(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
