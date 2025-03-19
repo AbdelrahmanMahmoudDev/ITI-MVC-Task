@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Task.Contexts;
 using Task.Errors;
+using Task.Models;
 using Task.Repositories;
 using Task.Utilities;
 
@@ -25,7 +26,8 @@ namespace Task
             {
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
-            builder.Services.AddScoped<StudentRepository>();
+            builder.Services.AddScoped<IRepository<Student>, StudentRepository>();
+            builder.Services.AddScoped<IJointRepository<CourseStudents>, StudentCourseRepository>();
             var app = builder.Build();
             FileUtility.WebRootPath = app.Environment.WebRootPath;
             // Configure the HTTP request pipeline.

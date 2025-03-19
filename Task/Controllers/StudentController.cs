@@ -15,58 +15,68 @@ namespace Task.Controllers
 {
     public class StudentController : Controller
     {
-        private readonly SchoolContext Context;
-        StudentRepository _StudentRepo;
-        public StudentController(SchoolContext Context, StudentRepository StudentRepo)
+        private readonly SchoolContext _Context;
+        IRepository<Student> _StudentRepo;
+        IJointRepository<CourseStudents> _StudentCourseRepo;
+        public StudentController(SchoolContext Context, IRepository<Student> StudentRepo, IJointRepository<CourseStudents> StudentCourseRepo)
         {
-            this.Context = Context ?? throw new ArgumentNullException(nameof(Context));
+            _Context = Context ?? throw new ArgumentNullException(nameof(Context));
             _StudentRepo = StudentRepo ?? throw new ArgumentNullException(nameof(StudentRepo));
+            _StudentCourseRepo = StudentCourseRepo ?? throw new ArgumentNullException(nameof(StudentCourseRepo));
         }
         public IActionResult Index()
         {
-            var Students = _StudentRepo.GetAll(new List<string> { "Department" }).ToList();
+            var Students = _StudentRepo.GetAll(["Department"]).ToList();
 
             return View("Index", Students);
         }
-        // TODO: CourseStudent Repo
         public IActionResult Details(int id)
         {
-            var student = Context.CourseStudents
-                .Where(s => s.StudentId == id)
-                .Include(s => s.Student)
-                .Include(s => s.Course)
-                .Include(s => s.Student.Department)
-                .Select(s => new StudentDetailsVM
-                {
-                    name = s.Student.name,
-                    image = s.Student.image,
-                    age = s.Student.age,
-                    address = s.Student.address,
-                    dept_name = s.Student.Department.name,
-                    course_min_degree = s.Course.MinimumDegree,
-                }).FirstOrDefault();
-
-            if (student != null)
+            try
             {
-                student.courses = Context.CourseStudents
-                    .Where(c => c.StudentId == id)
-                    .Include(s => s.Course)
-                    .ToDictionary(c => c.Course.name, c => c.Degree);
+                var student = _StudentCourseRepo.GetById(id, ["Student", "Course", "Student.Department"]);
+
+                StudentDetailsVM StudentModel = new StudentDetailsVM()
+                {
+                    name = student.Student.name,
+                    image = student.Student.image,
+                    age = student.Student.age,
+                    address = student.Student.address,
+                    dept_name = student.Student.Department.name,
+                    course_min_degree = student.Course.MinimumDegree,
+                    courses = _StudentCourseRepo.GetRangeById(id, ["Course"]).ToDictionary(c => c.Course.name, c=> c.Degree),
+                };
+                return View("Details", StudentModel);
             }
-            //HttpContext.Session.SetString("last_student", student.name ?? "Something's wrong");
-            return View(student);
+            catch(Exception E)
+            {
+                Debug.WriteLine(E.Message);
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
         public IActionResult Edit(int id)
         {
             Student Target = null;
             try
             {
-                Target = _StudentRepo.GetById(id, new List<string> { "Department" });
+                Target = _StudentRepo.GetById(id, ["Department"]);
             }
             catch (InvalidOperationException e)
             {
                 Debug.WriteLine($"Error: {e.Message}");
                 return StatusCode(500, "An error occurred while processing your request.");
+            }
+
+            var CourseData = _StudentCourseRepo.GetRangeById(id, ["Course"]);
+            List<CourseDetails> Courses = new List<CourseDetails>();
+            foreach(var Course in CourseData)
+            {
+                Courses.Add(new CourseDetails()
+                {
+                    course_id = (int)Course.CourseId,
+                    CourseName = Course.Course.name,
+                    Degree = Course.Degree
+                });
             }
 
             var student = new StudentAddVM()
@@ -77,12 +87,9 @@ namespace Task.Controllers
                 address = Target.address,
                 ImagePath = Target.image,
                 selected_department_id = Target.DepartmentId,
-                course_details = Context.CourseStudents
-                    .Where(crs => crs.StudentId == id)
-                    .Include(crs => crs.Course)
-                    .Select(crs => new CourseDetails() { course_id = (int)crs.CourseId, CourseName = crs.Course.name, Degree = crs.Degree }).ToList(),
-                departments = Context.Departments.ToList(),
-                courses = Context.Courses.ToList(),
+                course_details = Courses,
+                departments = _Context.Departments.ToList(),
+                courses = _Context.Courses.ToList(),
             };
 
             return View(student);
@@ -94,24 +101,27 @@ namespace Task.Controllers
         {
             if (!ModelState.IsValid)
             {
+                var CourseData = _StudentCourseRepo.GetRangeById(id, ["Course"]);
+                List<CourseDetails> Courses = new List<CourseDetails>();
+                foreach (var Course in CourseData)
+                {
+                    Courses.Add(new CourseDetails()
+                    {
+                        course_id = (int)Course.CourseId,
+                        CourseName = Course.Course.name,
+                        Degree = Course.Degree
+                    });
+                }
+
                 FormData.id = id;
                 FormData.age = _StudentRepo.GetById(id).age;
-                FormData.departments = Context.Departments.ToList();
-                FormData.courses = Context.Courses.ToList();
-                FormData.course_details = Context.CourseStudents
-                    .Where(crs => crs.StudentId == id)
-                    .Include(crs => crs.Course)
-                    .Select(crs => new CourseDetails
-                    {
-                        course_id = (int)crs.CourseId,
-                        CourseName = crs.Course.name,
-                        Degree = crs.Degree
-                    })
-                    .ToList();
+                FormData.departments = _Context.Departments.ToList();
+                FormData.courses = _Context.Courses.ToList();
+                FormData.course_details = Courses;
                 return View("Edit", FormData);
             }
 
-            var curr_student = _StudentRepo.GetById(id, new List<string> { "CourseStudents" });
+            var curr_student = _StudentRepo.GetById(id, ["CourseStudents"]);
 
             if (curr_student == null)
             {
@@ -134,20 +144,19 @@ namespace Task.Controllers
                 {
                     if (Course.StudentId == id)
                     {
-                        Context.CourseStudents.Remove(Course);
+                        _StudentCourseRepo.Delete(Course);
                     }
                 }
 
                 foreach (var NewCourse in FormData.course_details)
                 {
-                    Context.CourseStudents.Add(new CourseStudents()
+                    _StudentCourseRepo.Create(new CourseStudents()
                     {
                         StudentId = id,
                         CourseId = NewCourse.course_id,
-                        Degree = NewCourse.Degree
+                        Degree = NewCourse.Degree,
                     });
                 }
-
             }
 
             await _StudentRepo.UploadToDatabaseAsync();
@@ -156,8 +165,8 @@ namespace Task.Controllers
 
         public IActionResult Add()
         {
-            var departments = Context.Departments.ToList();
-            var courses = Context.Courses.ToList();
+            var departments = _Context.Departments.ToList();
+            var courses = _Context.Courses.ToList();
 
             StudentAddVM deps_courses = new StudentAddVM()
             {
@@ -176,7 +185,7 @@ namespace Task.Controllers
                 return View("Add", form_data);
             }
 
-            // We assume each student MUST have atleast one student
+            // We assume each student MUST have atleast one course
             var newStudent = new Student
             {
                 name = form_data.name,
@@ -212,14 +221,15 @@ namespace Task.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var target = _StudentRepo.GetById(id);
-            var courses = Context.CourseStudents.Where(c => c.StudentId == id).ToList();
+            var courses = _Context.CourseStudents.Where(c => c.StudentId == id).ToList(); // TODO
 
-            using var Transaction = await Context.Database.BeginTransactionAsync();
+            using var Transaction = await _Context.Database.BeginTransactionAsync();
             try
             {
                 if (courses.Any())
                 {
-                    Context.CourseStudents.RemoveRange(courses);
+                    // TODO
+                    _Context.CourseStudents.RemoveRange(courses);
                     _StudentRepo.UploadToDatabase();
                 }
                 if (target != null)
@@ -243,9 +253,9 @@ namespace Task.Controllers
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
-                return PartialView("_SearchResults", Context.Students.ToList());
+                return PartialView("_SearchResults", _StudentRepo.GetAll().ToList()); ;
             }
-            var results = Context.Students
+            var results = _Context.Students
                 .Where(e => e.name.Contains(searchTerm))
                 .Include(e => e.Department)
                 .ToList();

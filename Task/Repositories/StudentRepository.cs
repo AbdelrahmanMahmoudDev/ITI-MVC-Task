@@ -61,12 +61,12 @@ namespace Task.Repositories
 
         public Student GetById(int id, List<string> NavProps)
         {
-            IQueryable<Student> Students = _Context.Students;
+            IQueryable<Student> Students = _Context.Students.Where(T => T.StudentId == id);
             foreach (var Prop in NavProps)
             {
                 Students = Students.Include($"{Prop}");
             }
-            var Target = Students.Where(T => T.StudentId == id).FirstOrDefault();
+            var Target = Students.FirstOrDefault();
 
             return Target ?? throw new InvalidOperationException("Cannot retrieve a non-existant entity");
         }
