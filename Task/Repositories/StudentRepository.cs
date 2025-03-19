@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Task.Contexts;
 using Task.Models;
 
@@ -6,7 +7,11 @@ namespace Task.Repositories
 {
     public class StudentRepository : IRepository<Student>
     {
-        SchoolContext _Context = new SchoolContext();
+        private readonly SchoolContext _Context;
+        public StudentRepository(SchoolContext Context)
+        {
+            _Context = Context ?? throw new ArgumentNullException(nameof(Context));
+        }
         public void Create(Student obj)
         {
             _Context.Students.Add(obj);
@@ -14,14 +19,19 @@ namespace Task.Repositories
 
         public void Delete(Student obj)
         {
-            if(obj != null)
-            {
-                _Context.Students.Remove(obj);
-            }
-            else
+            if (obj == null)
             {
                 throw new InvalidOperationException("Cannot delete a non-existant entity");
             }
+            try
+            {
+                _Context.Students.Remove(obj);
+            }
+            catch(Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+
         }
 
         public IEnumerable<Student> GetAll()
@@ -32,7 +42,7 @@ namespace Task.Repositories
         public IEnumerable<Student> GetAll(List<string> NavProps)
         {
             IQueryable<Student> Students = _Context.Students;
-            foreach(var Prop in NavProps)
+            foreach (var Prop in NavProps)
             {
                 Students = Students.Include($"{Prop}");
             }
@@ -52,7 +62,7 @@ namespace Task.Repositories
         public Student GetById(int id, List<string> NavProps)
         {
             IQueryable<Student> Students = _Context.Students;
-            foreach(var Prop in NavProps)
+            foreach (var Prop in NavProps)
             {
                 Students = Students.Include($"{Prop}");
             }

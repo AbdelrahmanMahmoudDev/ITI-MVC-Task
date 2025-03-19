@@ -10,9 +10,12 @@ namespace Task.Contexts
         public DbSet<Instructor> Instructors { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<CourseStudents> CourseStudents { get; set; }
+        public SchoolContext() : base() { }
+        public SchoolContext(DbContextOptions Options) : base(Options) { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=SchoolDb2;Integrated Security=True;Encrypt=false;Trust Server Certificate = false;");
+            base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

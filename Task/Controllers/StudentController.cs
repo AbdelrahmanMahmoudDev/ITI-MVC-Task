@@ -15,15 +15,16 @@ namespace Task.Controllers
 {
     public class StudentController : Controller
     {
-        SchoolContext Context = new SchoolContext();
-        StudentRepository StudentRepo = new StudentRepository();
+        private readonly SchoolContext Context;
+        StudentRepository _StudentRepo;
+        public StudentController(SchoolContext Context, StudentRepository StudentRepo)
+        {
+            this.Context = Context ?? throw new ArgumentNullException(nameof(Context));
+            _StudentRepo = StudentRepo ?? throw new ArgumentNullException(nameof(StudentRepo));
+        }
         public IActionResult Index()
         {
-            //var students = Context.Students
-            //                      .Include(studs => studs.Department)
-            //                      .ToList();
-
-            var Students = StudentRepo.GetAll(new List<string>{ "Department" }).ToList();
+            var Students = _StudentRepo.GetAll(new List<string> { "Department" }).ToList();
 
             return View("Index", Students);
         }
@@ -57,26 +58,12 @@ namespace Task.Controllers
         }
         public IActionResult Edit(int id)
         {
-            //var student = Context.Students
-            //    .Where(s => s.StudentId == id)
-            //    .Include(s => s.Department)
-            //    .Select(s => new StudentAddVM
-            //    {
-            //        id = id,
-            //        name = s.name,
-            //        age = s.age,
-            //        address = s.address,
-            //        ImagePath = s.image,
-            //        selected_department_id = s.DepartmentId,
-            //    })
-            //    .FirstOrDefault();
-
             Student Target = null;
             try
             {
-                Target = StudentRepo.GetById(id, new List<string> { "Department" });
+                Target = _StudentRepo.GetById(id, new List<string> { "Department" });
             }
-            catch(InvalidOperationException e)
+            catch (InvalidOperationException e)
             {
                 Debug.WriteLine($"Error: {e.Message}");
                 return StatusCode(500, "An error occurred while processing your request.");
@@ -90,19 +77,17 @@ namespace Task.Controllers
                 address = Target.address,
                 ImagePath = Target.image,
                 selected_department_id = Target.DepartmentId,
-            };
-
-            if (student != null)
-            {
-                student.course_details = Context.CourseStudents
+                course_details = Context.CourseStudents
                     .Where(crs => crs.StudentId == id)
                     .Include(crs => crs.Course)
-                    .Select(crs => new CourseDetails() { course_id = (int)crs.CourseId, CourseName = crs.Course.name, Degree = crs.Degree }).ToList();
-                student.departments = Context.Departments.ToList();
-                student.courses = Context.Courses.ToList();
-            }
+                    .Select(crs => new CourseDetails() { course_id = (int)crs.CourseId, CourseName = crs.Course.name, Degree = crs.Degree }).ToList(),
+                departments = Context.Departments.ToList(),
+                courses = Context.Courses.ToList(),
+            };
+
             return View(student);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveEdit(StudentAddVM FormData, int id)
@@ -110,7 +95,7 @@ namespace Task.Controllers
             if (!ModelState.IsValid)
             {
                 FormData.id = id;
-                FormData.age = StudentRepo.GetById(id).age;
+                FormData.age = _StudentRepo.GetById(id).age;
                 FormData.departments = Context.Departments.ToList();
                 FormData.courses = Context.Courses.ToList();
                 FormData.course_details = Context.CourseStudents
@@ -125,11 +110,8 @@ namespace Task.Controllers
                     .ToList();
                 return View("Edit", FormData);
             }
-            //var curr_student = Context.Students
-            //    .Include(s => s.CourseStudents)
-            //    .FirstOrDefault(s => s.StudentId == id);
 
-            var curr_student = StudentRepo.GetById(id, new List<string> { "CourseStudents" });
+            var curr_student = _StudentRepo.GetById(id, new List<string> { "CourseStudents" });
 
             if (curr_student == null)
             {
@@ -139,6 +121,7 @@ namespace Task.Controllers
             curr_student.name = FormData.name;
             if (FormData.image != null)
             {
+                FileUtility.DeleteFile(curr_student.image);
                 curr_student.image = await FileUtility.SaveFile(FormData.image, "images/students", [".jpg", ".jpeg", ".png"]);
             }
             curr_student.address = FormData.address;
@@ -167,7 +150,7 @@ namespace Task.Controllers
 
             }
 
-            await StudentRepo.UploadToDatabaseAsync(); 
+            await _StudentRepo.UploadToDatabaseAsync();
             return RedirectToAction("Index");
         }
 
@@ -213,11 +196,11 @@ namespace Task.Controllers
             }
 
             //Context.Students.Add(newStudent);
-            StudentRepo.Create(newStudent);
+            _StudentRepo.Create(newStudent);
             try
             {
-                await StudentRepo.UploadToDatabaseAsync();
-               // await Context.SaveChangesAsync();
+                await _StudentRepo.UploadToDatabaseAsync();
+                // await Context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -226,25 +209,31 @@ namespace Task.Controllers
 
             return RedirectToAction("Index");
         }
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            //var target = StudentRepo.GetById(id);
-           var target = Context.Students.Find(id);
+            var target = _StudentRepo.GetById(id);
             var courses = Context.CourseStudents.Where(c => c.StudentId == id).ToList();
 
-            if (courses != null)
+            using var Transaction = await Context.Database.BeginTransactionAsync();
+            try
             {
-                Context.CourseStudents.RemoveRange(courses);
-
+                if (courses.Any())
+                {
+                    Context.CourseStudents.RemoveRange(courses);
+                    _StudentRepo.UploadToDatabase();
+                }
                 if (target != null)
                 {
-                    //StudentRepo.Delete(target);
-                    Context.Students.Remove(target); // PROBLEMATIC: Why does this work but not the repo func ??
-                    // Delete file in server asset store
+                    _StudentRepo.Delete(target);
+                    // Delete image in server asset store
                     FileUtility.DeleteFile(target.image);
+                    _StudentRepo.UploadToDatabase();
                 }
-                //StudentRepo.UploadToDatabase();
-                Context.SaveChanges();
+                await Transaction.CommitAsync();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Error saving student and courses: {e.InnerException?.Message}");
             }
             return RedirectToAction("Index");
         }

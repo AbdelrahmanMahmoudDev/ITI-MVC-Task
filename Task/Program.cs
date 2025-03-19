@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Task.Contexts;
 using Task.Errors;
+using Task.Repositories;
 using Task.Utilities;
 
 namespace Task
@@ -18,7 +21,11 @@ namespace Task
             {
                 options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB max file size
             });
-
+            builder.Services.AddDbContext<SchoolContext>(Options =>
+            {
+                Options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
+            });
+            builder.Services.AddScoped<StudentRepository>();
             var app = builder.Build();
             FileUtility.WebRootPath = app.Environment.WebRootPath;
             // Configure the HTTP request pipeline.
