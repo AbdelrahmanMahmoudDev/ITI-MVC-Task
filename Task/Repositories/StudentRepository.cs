@@ -27,7 +27,7 @@ namespace Task.Repositories
             {
                 _Context.Students.Remove(obj);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
             }
@@ -69,6 +69,26 @@ namespace Task.Repositories
             var Target = Students.FirstOrDefault();
 
             return Target ?? throw new InvalidOperationException("Cannot retrieve a non-existant entity");
+        }
+
+        public IEnumerable<Student> GetBySubString(string SubString)
+        {
+            // It's OK to return null here,
+            // a string query that doesn't match means returning the full list (filter)
+            return _Context.Students.Where(e => e.name.Contains(SubString));
+        }
+
+        public IEnumerable<Student> GetBySubString(string SubString, List<string> NavProps)
+        {
+            // It's OK to return null here,
+            // a string query that doesn't match means returning the full list (filter)
+            IQueryable<Student> Result = _Context.Students
+                                                 .Where(Student => Student.name.Contains(SubString));
+            foreach (var Prop in NavProps)
+            {
+                Result = Result.Include(Prop);
+            }
+            return Result;
         }
 
         public void Update(Student obj)

@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Task.Repositories;
 using System.Diagnostics;
 using System.Net.WebSockets;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Task.Controllers
 {
@@ -17,12 +18,16 @@ namespace Task.Controllers
     {
         private readonly SchoolContext _Context;
         IRepository<Student> _StudentRepo;
+        IRepository<Course> _CourseRepo;
+        IRepository<Department> _DepRepo;
         IJointRepository<CourseStudents> _StudentCourseRepo;
-        public StudentController(SchoolContext Context, IRepository<Student> StudentRepo, IJointRepository<CourseStudents> StudentCourseRepo)
+        public StudentController(SchoolContext Context, IRepository<Student> StudentRepo, IJointRepository<CourseStudents> StudentCourseRepo, IRepository<Course> CourseRepo, IRepository<Department> DepRepo)
         {
             _Context = Context ?? throw new ArgumentNullException(nameof(Context));
             _StudentRepo = StudentRepo ?? throw new ArgumentNullException(nameof(StudentRepo));
             _StudentCourseRepo = StudentCourseRepo ?? throw new ArgumentNullException(nameof(StudentCourseRepo));
+            _CourseRepo = CourseRepo ?? throw new ArgumentNullException(nameof(CourseRepo));
+            _DepRepo = DepRepo?? throw new ArgumentNullException(nameof(DepRepo));
         }
         public IActionResult Index()
         {
@@ -88,8 +93,8 @@ namespace Task.Controllers
                 ImagePath = Target.image,
                 selected_department_id = Target.DepartmentId,
                 course_details = Courses,
-                departments = _Context.Departments.ToList(),
-                courses = _Context.Courses.ToList(),
+                departments = _DepRepo.GetAll().ToList(),
+                courses = _CourseRepo.GetAll().ToList(),
             };
 
             return View(student);
@@ -115,8 +120,8 @@ namespace Task.Controllers
 
                 FormData.id = id;
                 FormData.age = _StudentRepo.GetById(id).age;
-                FormData.departments = _Context.Departments.ToList();
-                FormData.courses = _Context.Courses.ToList();
+                FormData.departments = _DepRepo.GetAll().ToList();
+                FormData.courses = _CourseRepo.GetAll().ToList();
                 FormData.course_details = Courses;
                 return View("Edit", FormData);
             }
@@ -165,8 +170,8 @@ namespace Task.Controllers
 
         public IActionResult Add()
         {
-            var departments = _Context.Departments.ToList();
-            var courses = _Context.Courses.ToList();
+            var departments = _DepRepo.GetAll().ToList();
+            var courses = _CourseRepo.GetAll().ToList();
 
             StudentAddVM deps_courses = new StudentAddVM()
             {
@@ -204,12 +209,10 @@ namespace Task.Controllers
                 newStudent.image = await FileUtility.SaveFile(form_data.image, "images/students", [".jpg", ".jpeg", ".png"]);
             }
 
-            //Context.Students.Add(newStudent);
             _StudentRepo.Create(newStudent);
             try
             {
                 await _StudentRepo.UploadToDatabaseAsync();
-                // await Context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -221,15 +224,14 @@ namespace Task.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var target = _StudentRepo.GetById(id);
-            var courses = _Context.CourseStudents.Where(c => c.StudentId == id).ToList(); // TODO
+            var courses = _StudentCourseRepo.GetRangeById(id).ToList();
 
-            using var Transaction = await _Context.Database.BeginTransactionAsync();
+            using IDbContextTransaction Transaction = await _Context.Database.BeginTransactionAsync();
             try
             {
                 if (courses.Any())
                 {
-                    // TODO
-                    _Context.CourseStudents.RemoveRange(courses);
+                    _StudentCourseRepo.DeleteRange(courses);
                     _StudentRepo.UploadToDatabase();
                 }
                 if (target != null)
@@ -248,17 +250,13 @@ namespace Task.Controllers
             return RedirectToAction("Index");
         }
 
-        // TODO: Use StudentService
         public ActionResult Search(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
                 return PartialView("_SearchResults", _StudentRepo.GetAll().ToList()); ;
             }
-            var results = _Context.Students
-                .Where(e => e.name.Contains(searchTerm))
-                .Include(e => e.Department)
-                .ToList();
+            var results = _StudentRepo.GetBySubString(searchTerm, ["Department"]);
             return PartialView("_SearchResults", results);
         }
     }

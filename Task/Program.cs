@@ -27,6 +27,8 @@ namespace Task
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
             builder.Services.AddScoped<IRepository<Student>, StudentRepository>();
+            builder.Services.AddScoped<IRepository<Course>, CourseRepository>();
+            builder.Services.AddScoped<IRepository<Department>, DepartmentRepository>();
             builder.Services.AddScoped<IJointRepository<CourseStudents>, StudentCourseRepository>();
             var app = builder.Build();
             FileUtility.WebRootPath = app.Environment.WebRootPath;

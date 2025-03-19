@@ -37,6 +37,18 @@ namespace Task.Repositories
             }
         }
 
+        public void DeleteRange(IEnumerable<CourseStudents> obj)
+        {
+            try
+            {
+                _Context.RemoveRange(obj);
+            }
+            catch (Exception E)
+            {
+                Debug.WriteLine(E.Message);
+            }
+        }
+
         public IEnumerable<CourseStudents> GetAll()
         {
             return _Context.CourseStudents;
