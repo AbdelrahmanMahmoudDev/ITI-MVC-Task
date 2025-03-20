@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Task.BL;
 using Task.Contexts;
 using Task.Errors;
 using Task.Models;
 using Task.Repositories;
 using Task.Utilities;
+using Task.ViewModels.Student;
 
 namespace Task
 {
@@ -30,6 +32,7 @@ namespace Task
             builder.Services.AddScoped<IRepository<Course>, CourseRepository>();
             builder.Services.AddScoped<IRepository<Department>, DepartmentRepository>();
             builder.Services.AddScoped<IJointRepository<CourseStudents>, StudentCourseRepository>();
+            builder.Services.AddTransient<IService<StudentAddVM, Student>, StudentService>();
             var app = builder.Build();
             FileUtility.WebRootPath = app.Environment.WebRootPath;
             // Configure the HTTP request pipeline.
