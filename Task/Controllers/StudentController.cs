@@ -229,7 +229,7 @@ namespace Task.Controllers
             using IDbContextTransaction Transaction = await _Context.Database.BeginTransactionAsync();
             try
             {
-                if (courses.Any())
+                if (courses.Count > 0)
                 {
                     _StudentCourseRepo.DeleteRange(courses);
                     _StudentRepo.UploadToDatabase();
