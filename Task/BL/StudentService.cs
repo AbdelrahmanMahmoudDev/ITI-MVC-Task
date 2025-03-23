@@ -7,24 +7,17 @@ using Task.ViewModels.Student;
 using Task.Contexts;
 using System.Diagnostics;
 using Microsoft.SqlServer.Server;
+using Task.Repositories.Base;
 
 namespace Task.BL
 {
-    public class StudentService : IService<StudentAddVM, Student>
+    public class StudentService : IStudentService<StudentAddVM>
     {
-        private readonly SchoolContext _Context;
-        private readonly IRepository<Student> _StudentRepo;
-        private readonly IRepository<Department> _DepRepo;
-        private readonly IRepository<Course> _CourseRepo;
-        private readonly IJointRepository<CourseStudents> _StudCourseRepo;
-        
-        public StudentService(SchoolContext Context, IRepository<Student> StudentRepo, IRepository<Department> DepRepo, IRepository<Course> CourseRepo, IJointRepository<CourseStudents> StudCourseRepo)
+        private readonly IUnitOfWork _UnitOfWork;
+
+        public StudentService(IUnitOfWork UnitOfWork)
         {
-            _Context = Context ?? throw new ArgumentNullException(nameof(Context));
-            _StudentRepo = StudentRepo ?? throw new ArgumentNullException(nameof(StudentRepo));
-            _DepRepo = DepRepo ?? throw new ArgumentNullException(nameof(DepRepo));
-            _CourseRepo = CourseRepo ?? throw new ArgumentNullException(nameof(CourseRepo));
-            _StudCourseRepo = StudCourseRepo ?? throw new ArgumentNullException(nameof(StudentRepo));
+            _UnitOfWork = UnitOfWork;
         }
         public async System.Threading.Tasks.Task CreateAsync(StudentAddVM Data)
         {
@@ -47,10 +40,10 @@ namespace Task.BL
                 NewStudent.image = await FileUtility.SaveFile(Data.image, "images/students", [".jpg", ".jpeg", ".png"]);
             }
 
-            _StudentRepo.Create(NewStudent);
+            _UnitOfWork.Students.Create(NewStudent);
             try
             {
-                await _StudentRepo.UploadToDatabaseAsync();
+                await _UnitOfWork.Students.UploadToDatabaseAsync();
             }
             catch (Exception ex)
             {
@@ -60,23 +53,23 @@ namespace Task.BL
 
         public async System.Threading.Tasks.Task DeleteAsync(int Id)
         {
-            var Target = _StudentRepo.GetById(Id);
-            var Courses = _StudCourseRepo.GetRangeById(Id).ToList();
+            var Target = _UnitOfWork.Students.GetById(Id);
+            var Courses = _UnitOfWork.CourseStudents.GetRangeById(Id).ToList();
 
-            using IDbContextTransaction Transaction = await _Context.Database.BeginTransactionAsync();
+            using var Transaction = await _UnitOfWork.BeginTransaction();
             try
             {
                 if (Courses.Count > 0)
                 {
-                    _StudCourseRepo.DeleteRange(Courses);
-                    _StudCourseRepo.UploadToDatabase();
+                    _UnitOfWork.CourseStudents.DeleteRange(Courses);
+                    _UnitOfWork.CourseStudents.UploadToDatabase();
                 }
                 if (Target != null)
                 {
-                    _StudentRepo.Delete(Target);
+                    _UnitOfWork.Students.Delete(Target);
                     // Delete image in server asset store
                     FileUtility.DeleteFile(Target.image);
-                    _StudentRepo.UploadToDatabase();
+                    _UnitOfWork.Students.UploadToDatabase();
                 }
                 await Transaction.CommitAsync();
             }
@@ -88,7 +81,7 @@ namespace Task.BL
 
         public async System.Threading.Tasks.Task Update(StudentAddVM FormData, int Id)
         {
-            var curr_student = _StudentRepo.GetById(Id, ["CourseStudents"]);
+            var curr_student = _UnitOfWork.Students.GetById(Id, ["CourseStudents"]);
 
             curr_student.name = FormData.name;
             if (FormData.image != null)
@@ -106,13 +99,13 @@ namespace Task.BL
                 {
                     if (Course.StudentId == Id)
                     {
-                        _StudCourseRepo.Delete(Course);
+                        _UnitOfWork.CourseStudents.Delete(Course);
                     }
                 }
 
                 foreach (var NewCourse in FormData.course_details)
                 {
-                    _StudCourseRepo.Create(new CourseStudents()
+                    _UnitOfWork.CourseStudents.Create(new CourseStudents()
                     {
                         StudentId = Id,
                         CourseId = NewCourse.course_id,
@@ -121,23 +114,23 @@ namespace Task.BL
                 }
             }
 
-            await _StudentRepo.UploadToDatabaseAsync();
+            await _UnitOfWork.Students.UploadToDatabaseAsync();
         }
 
         public IEnumerable<Student> GetBySearch(string SearchTerm)
         {
-            IEnumerable<Student> Target = _StudentRepo.GetBySubString(SearchTerm, ["Department"]);
-            if(Target.ToList().Count <= 0)
+            IEnumerable<Student> Target = _UnitOfWork.Students.GetBySubString(SearchTerm, ["Department"]);
+            if (Target.ToList().Count <= 0)
             {
-                return _StudentRepo.GetAll();
+                return _UnitOfWork.Students.GetAll();
             }
             return Target;
         }
 
         public StudentAddVM PrepareCreateForm()
         {
-            var Departments = _DepRepo.GetAll().ToList();
-            var Courses = _CourseRepo.GetAll().ToList();
+            var Departments = _UnitOfWork.Departments.GetAll().ToList();
+            var Courses = _UnitOfWork.Courses.GetAll().ToList();
 
             StudentAddVM DepartmentsAndCourses = new StudentAddVM()
             {
@@ -153,14 +146,14 @@ namespace Task.BL
             Student Target = null;
             try
             {
-                Target = _StudentRepo.GetById(Id, ["Department"]);
+                Target = _UnitOfWork.Students.GetById(Id, ["Department"]);
             }
             catch (InvalidOperationException e)
             {
                 Debug.WriteLine($"Error: {e.Message}");
             }
 
-            var CourseData = _StudCourseRepo.GetRangeById(Id, ["Course"]);
+            var CourseData = _UnitOfWork.CourseStudents.GetRangeById(Id, ["Course"]);
             List<CourseDetails> Courses = new List<CourseDetails>();
             foreach (var Course in CourseData)
             {
@@ -178,14 +171,48 @@ namespace Task.BL
                 name = Target.name,
                 age = Target.age,
                 address = Target.address,
-                ImagePath = Target.image,
+                image_path = Target.image,
                 selected_department_id = Target.DepartmentId,
                 course_details = Courses,
-                departments = _DepRepo.GetAll().ToList(),
-                courses = _CourseRepo.GetAll().ToList(),
+                departments = _UnitOfWork.Departments.GetAll().ToList(),
+                courses = _UnitOfWork.Courses.GetAll().ToList(),
             };
 
             return student;
+        }
+
+        public IEnumerable<Student> PrepareDashboardData()
+        {
+            return _UnitOfWork.Students.GetAll(["Department"]);
+        }
+
+        public StudentAddVM PrepareDetails(int Id)
+        {
+            var CourseData = _UnitOfWork.CourseStudents.GetRangeById(Id, ["Course"]);
+            List<CourseDetails> Courses = new List<CourseDetails>();
+            foreach (var Course in CourseData)
+            {
+                Courses.Add(new CourseDetails()
+                {
+                    course_id = (int)Course.CourseId,
+                    CourseName = Course.Course.name,
+                    Degree = Course.Degree
+                });
+            }
+
+            var Student = _UnitOfWork.CourseStudents.GetById(Id, ["Student", "Course", "Student.Department"]);
+            StudentAddVM StudentModel = new StudentAddVM()
+            {
+                name = Student.Student.name,
+                image_path = Student.Student.image,
+                age = Student.Student.age,
+                address = Student.Student.address,
+                dept_name = Student.Student.Department.name,
+                course_min_degree = Student.Course.MinimumDegree,
+                course_details = Courses
+            };
+
+            return StudentModel;
         }
     }
 }
