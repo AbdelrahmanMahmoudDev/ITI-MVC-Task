@@ -6,6 +6,7 @@ using Task.Contexts;
 using Task.Errors;
 using Task.Models;
 using Task.Repositories;
+using Task.Repositories.Base;
 using Task.Utilities;
 using Task.ViewModels.Student;
 
@@ -28,11 +29,8 @@ namespace Task
             {
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
-            builder.Services.AddScoped<IRepository<Student>, StudentRepository>();
-            builder.Services.AddScoped<IRepository<Course>, CourseRepository>();
-            builder.Services.AddScoped<IRepository<Department>, DepartmentRepository>();
-            builder.Services.AddScoped<IJointRepository<CourseStudents>, StudentCourseRepository>();
-            builder.Services.AddTransient<IService<StudentAddVM, Student>, StudentService>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IStudentService<StudentAddVM>, StudentService>();
             var app = builder.Build();
             FileUtility.WebRootPath = app.Environment.WebRootPath;
             // Configure the HTTP request pipeline.

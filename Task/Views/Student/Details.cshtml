@@ -3,12 +3,12 @@
 *@
 @{
 }
-@model StudentDetailsVM
+@model StudentAddVM
 <div class="card">
     <div class="card-body">
         <div class="col-lg-12">
             <div class="border-bottom text-center pb-4">
-                <img src="@Model.image" alt="profile" class="img-lg rounded-circle mb-3">
+                <img src="@Model.image_path" alt="profile" class="img-lg rounded-circle mb-3">
                 <p>@Model.name</p>
             </div>
             <div class="py-4">
@@ -27,15 +27,15 @@
                 <p class="clearfix">
                     <span class="float-start"> Registered Courses </span>
                     <ul class="list-group">
-                        @foreach (var course in Model.courses)
+                        @foreach (var course in Model.course_details)
                         {
-                            @if (@Model.course_min_degree > course.Value)
+                            @if (Model.course_min_degree > course.Degree)
                             {
-                                <li class="list-group-item list-group-item-danger">@course.Key: @course.Value</li>
+                                <li class="list-group-item list-group-item-danger">@course.CourseName: @course.Degree</li>
                             }
                             else
                             {
-                                <li class="list-group-item list-group-item-success">@course.Key: @course.Value</li>
+                                <li class="list-group-item list-group-item-success">@course.CourseName: @course.Degree</li>
                             }
                         }
                     </ul>

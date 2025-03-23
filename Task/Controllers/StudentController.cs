@@ -13,59 +13,53 @@ using System.Net.WebSockets;
 using Microsoft.EntityFrameworkCore.Storage;
 using Task.BL;
 using Microsoft.SqlServer.Server;
+using Task.Repositories.Base;
 
 namespace Task.Controllers
 {
     public class StudentController : Controller
     {
-        private readonly SchoolContext _Context;
-        IRepository<Student> _StudentRepo;
-        IRepository<Course> _CourseRepo;
-        IRepository<Department> _DepRepo;
-        IJointRepository<CourseStudents> _StudentCourseRepo;
-        IService<StudentAddVM, Student> _StudentService;
-        public StudentController(SchoolContext Context, IRepository<Student> StudentRepo, IJointRepository<CourseStudents> StudentCourseRepo, IRepository<Course> CourseRepo, IRepository<Department> DepRepo, IService<StudentAddVM, Student> StudentService)
+        private readonly IStudentService<StudentAddVM> _StudentService;
+        public StudentController(IStudentService<StudentAddVM> StudentService)
         {
-            _Context = Context ?? throw new ArgumentNullException(nameof(Context));
-            _StudentRepo = StudentRepo ?? throw new ArgumentNullException(nameof(StudentRepo));
-            _StudentCourseRepo = StudentCourseRepo ?? throw new ArgumentNullException(nameof(StudentCourseRepo));
-            _CourseRepo = CourseRepo ?? throw new ArgumentNullException(nameof(CourseRepo));
-            _DepRepo = DepRepo ?? throw new ArgumentNullException(nameof(DepRepo));
             _StudentService = StudentService ?? throw new ArgumentNullException(nameof(StudentService));
         }
         public IActionResult Index()
         {
-            var Students = _StudentRepo.GetAll(["Department"]).ToList();
+            try
+            {
+                var Students = _StudentService.PrepareDashboardData();
+                return View("Index", Students.ToList());
+            }
+            catch (Exception Ex)
+            {
+                return StatusCode(500, "An error occured while processing your request.");
+            }
 
-            return View("Index", Students);
         }
         public IActionResult Details(int id)
         {
             try
             {
-                var student = _StudentCourseRepo.GetById(id, ["Student", "Course", "Student.Department"]);
-
-                StudentDetailsVM StudentModel = new StudentDetailsVM()
-                {
-                    name = student.Student.name,
-                    image = student.Student.image,
-                    age = student.Student.age,
-                    address = student.Student.address,
-                    dept_name = student.Student.Department.name,
-                    course_min_degree = student.Course.MinimumDegree,
-                    courses = _StudentCourseRepo.GetRangeById(id, ["Course"]).ToDictionary(c => c.Course.name, c => c.Degree),
-                };
+                StudentAddVM StudentModel = _StudentService.PrepareDetails(id);
                 return View("Details", StudentModel);
             }
-            catch (Exception E)
+            catch (Exception Ex)
             {
-                Debug.WriteLine(E.Message);
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
         public IActionResult Edit(int id)
         {
-            return View(_StudentService.PrepareEditForm(id));
+            try
+            {
+                StudentAddVM StudentModel = _StudentService.PrepareEditForm(id);
+                return View(StudentModel);
+            }
+            catch (Exception Ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
 
         [HttpPost]
@@ -74,17 +68,40 @@ namespace Task.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View("Edit", _StudentService.PrepareEditForm(id));
+                try
+                {
+                    StudentAddVM StudentModel = _StudentService.PrepareEditForm(id);
+                    return View(StudentModel);
+                }
+                catch (Exception Ex)
+                {
+                    return StatusCode(500, "An error occurred while processing your request.");
+                }
             }
 
-            await _StudentService.Update(FormData, id);
+            try
+            {
+                await _StudentService.Update(FormData, id);
+                return RedirectToAction("Index");
+            }
+            catch (Exception Ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
 
-            return RedirectToAction("Index");
         }
 
         public IActionResult Add()
         {
-            return View(_StudentService.PrepareCreateForm());
+            try
+            {
+                StudentAddVM StudentModel = _StudentService.PrepareCreateForm();
+                return View(StudentModel);
+            }
+            catch (Exception Ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
 
         [HttpPost]
