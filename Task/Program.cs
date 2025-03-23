@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Task.BL;
@@ -29,6 +30,9 @@ namespace Task
             {
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
+
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<SchoolContext>();
+
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IStudentService<StudentAddVM>, StudentService>();
             var app = builder.Build();

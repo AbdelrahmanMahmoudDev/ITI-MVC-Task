@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Task.Models;
 
 namespace Task.Contexts
 {
-    public class SchoolContext : DbContext
+    public class SchoolContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Student> Students { get; set; }
         public DbSet<Department> Departments { get; set; }
@@ -20,6 +21,7 @@ namespace Task.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             modelBuilder.Entity<CourseStudents>()
                 .HasKey(cs => new { cs.CourseId, cs.StudentId });
 
@@ -52,6 +54,7 @@ namespace Task.Contexts
             {
                 relationship.DeleteBehavior = DeleteBehavior.NoAction;
             }
+            base.OnModelCreating(modelBuilder);
         }
 
     }
