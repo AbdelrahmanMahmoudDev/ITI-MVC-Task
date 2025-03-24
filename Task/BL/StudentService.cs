@@ -8,6 +8,7 @@ using Task.Contexts;
 using System.Diagnostics;
 using Microsoft.SqlServer.Server;
 using Task.Repositories.Base;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Task.BL
 {
@@ -17,7 +18,7 @@ namespace Task.BL
 
         public StudentService(IUnitOfWork UnitOfWork)
         {
-            _UnitOfWork = UnitOfWork;
+            _UnitOfWork = UnitOfWork ?? throw new ArgumentNullException(nameof(UnitOfWork));
         }
         public async System.Threading.Tasks.Task CreateAsync(StudentAddVM Data)
         {
@@ -35,10 +36,18 @@ namespace Task.BL
                 }).ToList()
             };
 
-            if (Data.image != null)
+            try
             {
-                NewStudent.image = await FileUtility.SaveFile(Data.image, "images/students", [".jpg", ".jpeg", ".png"]);
+                if (Data.image != null && Data.image.Length > 0)
+                {
+                    NewStudent.image = await FileUtility.SaveFile(Data.image, "images/students", [".jpg", ".jpeg", ".png"]);
+                }
             }
+            catch (Exception fileEx)
+            {
+                throw new Exception($"File upload failed: {fileEx.Message}");
+            }
+
 
             _UnitOfWork.Students.Create(NewStudent);
             try
@@ -84,11 +93,21 @@ namespace Task.BL
             var curr_student = _UnitOfWork.Students.GetById(Id, ["CourseStudents"]);
 
             curr_student.name = FormData.name;
-            if (FormData.image != null)
+
+
+            try
             {
-                FileUtility.DeleteFile(curr_student.image);
-                curr_student.image = await FileUtility.SaveFile(FormData.image, "images/students", [".jpg", ".jpeg", ".png"]);
+                if (FormData.image != null && FormData.image.Length > 0)
+                {
+                    FileUtility.DeleteFile(curr_student.image);
+                    curr_student.image = await FileUtility.SaveFile(FormData.image, "images/students", [".jpg", ".jpeg", ".png"]);
+                }
             }
+            catch (Exception fileEx)
+            {
+                throw new Exception($"File upload failed: {fileEx.Message}");
+            }
+
             curr_student.address = FormData.address;
             curr_student.DepartmentId = FormData.selected_department_id;
             curr_student.address = FormData.address;

@@ -22,18 +22,19 @@
 				<div class="form-group">
 					<label asp-for="address">Address</label>
 					<input type="text" asp-for="address" class="form-control" placeholder="Address" />
-					<span asp-validation-for="age" class="text-danger"></span>
+					<span asp-validation-for="address" class="text-danger"></span>
 				</div>
-				<div class="form-group image-upload-section">	
-				 	<label asp-for="image">File upload</label>		
-				 	<input type="file" asp-for="image" class="file-upload-default">		
-				 	<div class="input-group col-xs-12">		
-				 		<input type="text" class="form-control file-upload-info" disabled="" placeholder="Upload Image">	
-				 		<span class="input-group-append">	
-				 			<button id="img-upload-btn" class="file-upload-browse btn btn-gradient-primary" type="button">Upload</button>	
-				 		</span>		
-				 	</div>		
-				 </div>		
+				<div class="form-group image-upload-section">
+					<label asp-for="image">Profile Picture</label>
+					<input type="file" asp-for="image" class="file-upload-default">
+					<img id="preview-image" src="@Model.image_path" width="50" alt="Profile Picture" />
+					<div class="input-group col-xs-12">
+						<input id="file-path-section" type="text" class="form-control file-upload-info" disabled="" placeholder="Upload Image">
+						<span class="input-group-append">
+							<button id="img-upload-btn" class="file-upload-browse btn btn-gradient-primary" type="button">Upload</button>
+						</span>
+					</div>
+				</div>
 				<div class="form-group">
 					<label asp-for="selected_department_id">Department</label>
 					<select asp-items="@(new SelectList(Model.departments, "DepartmentId", "name"))" asp-for="selected_department_id" class="form-select" aria-label="Default select example">
