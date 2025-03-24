@@ -43,7 +43,7 @@ namespace Task.Controllers
                 return StatusCode(500, "An error occured while processing your request.");
             }
 
-            return View("Index");
+            return RedirectToAction("Index");
         }
     }
 }

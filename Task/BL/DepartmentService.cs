@@ -15,20 +15,20 @@ namespace Task.BL
 
         public async System.Threading.Tasks.Task CreateAsync(DepartmentVM Data)
         {
-            Department NewDepartment = new Department()
+            Department NewDepartment = new Department
             {
                 name = Data.name,
                 description = Data.description,
                 location = Data.location,
             };
 
-            _UnitOfWork.Departments.Create(NewDepartment);
 
             try
             {
+                _UnitOfWork.Departments.Create(NewDepartment);
                 await _UnitOfWork.Departments.UploadToDatabaseAsync();
             }
-            catch(Exception Ex)
+            catch (Exception Ex)
             {
                 Debug.WriteLine(Ex.Message);
             }

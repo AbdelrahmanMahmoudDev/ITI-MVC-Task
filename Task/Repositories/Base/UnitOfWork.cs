@@ -35,5 +35,11 @@ namespace Task.Repositories.Base
         {
             return _Context.SaveChanges();
         }
+
+        public void Dispose()
+        {
+            _Context.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

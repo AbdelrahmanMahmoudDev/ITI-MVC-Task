@@ -3,7 +3,7 @@ using Task.Models;
 
 namespace Task.Repositories.Base
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
         IRepository<Course> Courses { get; }
         IRepository<Department> Departments { get; }

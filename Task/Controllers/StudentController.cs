@@ -1,19 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Task.Contexts;
-using Task.Models;
 using Task.ViewModels.Student;
-using Task.ViewModels.Instructor;
-using System.Linq;
-using Task.Utilities;
-using Microsoft.IdentityModel.Tokens;
-using Task.Repositories;
 using System.Diagnostics;
-using System.Net.WebSockets;
-using Microsoft.EntityFrameworkCore.Storage;
 using Task.BL;
-using Microsoft.SqlServer.Server;
-using Task.Repositories.Base;
 
 namespace Task.Controllers
 {
@@ -31,7 +19,7 @@ namespace Task.Controllers
                 var Students = _StudentService.PrepareDashboardData();
                 return View("Index", Students.ToList());
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occured while processing your request.");
             }
@@ -44,7 +32,7 @@ namespace Task.Controllers
                 StudentAddVM StudentModel = _StudentService.PrepareDetails(id);
                 return View("Details", StudentModel);
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred while processing your request.");
             }
@@ -56,7 +44,7 @@ namespace Task.Controllers
                 StudentAddVM StudentModel = _StudentService.PrepareEditForm(id);
                 return View(StudentModel);
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred while processing your request.");
             }
@@ -73,7 +61,7 @@ namespace Task.Controllers
                     StudentAddVM StudentModel = _StudentService.PrepareEditForm(id);
                     return View(StudentModel);
                 }
-                catch (Exception Ex)
+                catch (Exception)
                 {
                     return StatusCode(500, "An error occurred while processing your request.");
                 }
@@ -84,7 +72,7 @@ namespace Task.Controllers
                 await _StudentService.Update(FormData, id);
                 return RedirectToAction("Index");
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred while processing your request.");
             }
@@ -98,7 +86,7 @@ namespace Task.Controllers
                 StudentAddVM StudentModel = _StudentService.PrepareCreateForm();
                 return View(StudentModel);
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred while processing your request.");
             }
@@ -106,7 +94,7 @@ namespace Task.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveAdd(StudentAddVM FormData)
+        public async Task<IActionResult> SaveAdd([FromForm] StudentAddVM FormData)
         {
             if (!ModelState.IsValid)
             {
@@ -117,8 +105,10 @@ namespace Task.Controllers
             {
                 await _StudentService.CreateAsync(FormData);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
+                Debug.WriteLine($"Exception: {ex.Message}");
+                Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
                 return StatusCode(500, "An error occured processing your request.");
             }
 
@@ -130,7 +120,7 @@ namespace Task.Controllers
             {
                 await _StudentService.DeleteAsync(id);
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occured processing your request.");
             }

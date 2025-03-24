@@ -10,7 +10,7 @@ namespace Task.Repositories
         private readonly SchoolContext _Context;
         public DepartmentRepository(SchoolContext Context)
         {
-            _Context = Context;
+            _Context =  Context ?? throw new ArgumentNullException(nameof(Context));
         }
         public void Create(Department obj)
         {
