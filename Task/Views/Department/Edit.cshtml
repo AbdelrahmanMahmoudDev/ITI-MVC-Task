@@ -8,8 +8,8 @@
 <div class="grid-margin stretch-card">
 	<div class="card">
 		<div class="card-body">
-			<h4 class="card-title">Please add a department</h4>
-			<form class="forms-sample" asp-controller="Department" asp-action="SaveAdd">
+			<h4 class="card-title">Please enter new details</h4>
+			<form class="forms-sample" asp-controller="Department" asp-action="SaveEdit" asp-route-id="@Model.Id">
 				<div class="form-group">
 					<label asp-for="@Model.name">Name</label>
 					<input asp-for="@Model.name" type="text" class="form-control" placeholder="Name">
