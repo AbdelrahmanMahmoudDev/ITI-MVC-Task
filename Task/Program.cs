@@ -37,6 +37,7 @@ namespace Task
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IStudentService<StudentAddVM>, StudentService>();
             builder.Services.AddScoped<IDepartmentService<DepartmentVM>, DepartmentService>();
+            builder.Services.AddScoped<ICourseService<CourseVM>, CourseService>();
             var app = builder.Build();
             FileUtility.WebRootPath = app.Environment.WebRootPath;
             // Configure the HTTP request pipeline.

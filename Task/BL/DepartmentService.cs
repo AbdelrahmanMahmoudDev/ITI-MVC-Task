@@ -34,9 +34,26 @@ namespace Task.BL
             }
         }
 
-        public System.Threading.Tasks.Task DeleteAsync(int Id)
+        public async System.Threading.Tasks.Task DeleteAsync(int Id)
         {
-            throw new NotImplementedException();
+            Department TargetDepartment = _UnitOfWork.Departments.GetById(Id);
+
+            if(TargetDepartment == null)
+            {
+                Debug.WriteLine($"Entity with Id {Id} does not exist.");
+                throw new InvalidOperationException();
+            }
+
+            try
+            {
+                _UnitOfWork.Departments.Delete(TargetDepartment);
+                await _UnitOfWork.Departments.UploadToDatabaseAsync();
+            }
+            catch(Exception)
+            {
+                Debug.WriteLine($"Deleting entity {Id} failed.");
+                throw new InvalidOperationException();
+            }
         }
 
         public IEnumerable<Department> PrepareDashboard()
@@ -46,9 +63,52 @@ namespace Task.BL
             return Result;
         }
 
-        public System.Threading.Tasks.Task Update(DepartmentVM Data, int Id)
+        public async System.Threading.Tasks.Task Update(DepartmentVM Data, int Id)
         {
-            throw new NotImplementedException();
+            Department TargetDepartment = _UnitOfWork.Departments.GetById(Id);
+
+            if(TargetDepartment == null)
+            {
+                Debug.WriteLine($"An entity with Id {Id} does not exist");
+                throw new NullReferenceException();
+            }
+
+            TargetDepartment.name = Data.name;
+            TargetDepartment.description = Data.description;
+            TargetDepartment.location = Data.location;
+
+            try
+            {
+                _UnitOfWork.Departments.Update(TargetDepartment);
+                await _UnitOfWork.Departments.UploadToDatabaseAsync();
+            }
+            catch(Exception)
+            {
+                Debug.WriteLine($"Updating Entity {Id} failed");
+                throw new InvalidOperationException();
+            }
+        }
+
+        public DepartmentVM PrepareEdit(int Id)
+        {
+            Department TargetDepartment = _UnitOfWork.Departments.GetById(Id);
+
+            if(TargetDepartment == null)
+            {
+                Debug.WriteLine($"Entity with given Id: {Id} does not exist.");
+
+                throw new NullReferenceException($"Entity with given Id: {Id} does not exist.");
+            }
+
+            DepartmentVM TargetViewModel = new DepartmentVM()
+            {
+                Id = TargetDepartment.DepartmentId,
+                name = TargetDepartment.name,
+                description = TargetDepartment.description,
+                location = TargetDepartment.location
+            };
+
+            return TargetViewModel;
         }
     }
 }

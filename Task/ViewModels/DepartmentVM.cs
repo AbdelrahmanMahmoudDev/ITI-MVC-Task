@@ -4,6 +4,7 @@ namespace Task.ViewModels
 {
     public class DepartmentVM
     {
+        public int Id { get; set; }
         [Required(ErrorMessage="*")]
         [MaxLength(25, ErrorMessage="Please keep department names below 26 characters")]
         public string name { get; set; }

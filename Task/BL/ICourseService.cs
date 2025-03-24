@@ -2,12 +2,12 @@
 
 namespace Task.BL
 {
-    public interface IDepartmentService<ViewModel>
+    public interface ICourseService<ViewModel>
     {
-        public IEnumerable<Department> PrepareDashboard();
+        public IEnumerable<Course> PrepareDashboard();
         public ViewModel PrepareEdit(int Id);
         public System.Threading.Tasks.Task CreateAsync(ViewModel Data);
-        public System.Threading.Tasks.Task Update(ViewModel Data, int Id);
+        public System.Threading.Tasks.Task UpdateAsync(ViewModel Data, int Id);
         public System.Threading.Tasks.Task DeleteAsync(int Id);
     }
 }

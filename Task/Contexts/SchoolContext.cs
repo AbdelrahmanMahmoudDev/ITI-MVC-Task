@@ -8,7 +8,7 @@ namespace Task.Contexts
     {
         public DbSet<Student> Students { get; set; }
         public DbSet<Department> Departments { get; set; }
-        public DbSet<Instructor> Instructors { get; set; }
+        public DbSet<Instructor> Instructors { get; set; } 
         public DbSet<Course> Courses { get; set; }
         public DbSet<CourseStudents> CourseStudents { get; set; }
         public SchoolContext() : base() { }
