@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Task.BL;
 using Task.Contexts;
 using Task.Models;
 using Task.ViewModels.Instructor;
@@ -10,9 +11,11 @@ namespace Task.Controllers
     public class InstructorController : Controller
     {
         SchoolContext context;
-        public InstructorController()
+        private readonly IInstructorService<InstructorVM> _InstructorService;
+        public InstructorController(IInstructorService<InstructorVM> InstructorService)
         {
             context = new SchoolContext();
+            _InstructorService = InstructorService;
         }
         public IActionResult Index()
         {
@@ -30,7 +33,7 @@ namespace Task.Controllers
                                         lname = i.lname,
                                         full_name = i.fname + " " + i.lname,
                                         image_path = i.image,
-                                        hire_date = new DateTime(i.HireDate.Value.Year, i.HireDate.Value.Month,                                                i.HireDate.Value.Day),
+                                        HireDate = new DateTime(i.HireDate.Value.Year, i.HireDate.Value.Month,                                                i.HireDate.Value.Day),
                                         salary = i.salary,
                                         age = i.age
                                     })
@@ -88,61 +91,22 @@ namespace Task.Controllers
         }
         public IActionResult Add()
         {
-            InstructorNewVM required_data = new InstructorNewVM()
-            {
-                available_courses = context.Courses.ToList(),
-                available_departments = context.Departments.ToList(),
-            };
-
-            return View(required_data);
+            return View(_InstructorService.PrepareAddForm());
         }
         [HttpPost]
-        public IActionResult SaveNew(InstructorNewVM form_data)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveNew(InstructorVM FormData)
         {
             if(!ModelState.IsValid)
             {
-                InstructorNewVM required_data = new InstructorNewVM()
-                {
-                    available_courses = context.Courses.ToList(),
-                    available_departments = context.Departments.ToList(),
-                };
-                return View("Add", required_data);
+                return View("Add", _InstructorService.PrepareAddForm());
             }
-            Instructor new_guy = new Instructor()
-            {
-                fname = form_data.fname,
-                lname = form_data.lname,
-                salary = form_data.salary,
-                image = "/images/male.jpg",
-                age = form_data.age,
-                HireDate = new DateTime(form_data.HireDate.Value.Year,
-                form_data.HireDate.Value.Month,
-                form_data.HireDate.Value.Day),
-                DepartmentId = form_data.selected_department_id,
-            };
-            context.Instructors.Add(new_guy);
-            context.SaveChanges();
-            context.Courses.Where(c => c.CourseId == form_data.selected_course_id)
-                           .FirstOrDefault()
-                           .InstructorId = context.Instructors.OrderBy(inst => inst.InstructorId).LastOrDefault().InstructorId;
-            context.SaveChanges();
+            await _InstructorService.AddInstructor(FormData);
             return RedirectToAction("Index");
         }
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int Id)
         {
-            var target = context.Instructors.Find(id);
-            if(target != null)
-            {
-                context.Instructors.Remove(target);
-            }
-
-            var referencing_courses = context.Courses.Where(c => c.InstructorId == id).ToList();
-            foreach(var crs in referencing_courses)
-            {
-                crs.InstructorId = null;
-            }
-
-            context.SaveChanges();
+            await _InstructorService.RemoveInstructor(Id);
             return RedirectToAction("Index");
         }
     }

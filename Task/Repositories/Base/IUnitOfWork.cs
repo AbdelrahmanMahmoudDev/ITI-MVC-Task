@@ -12,6 +12,6 @@ namespace Task.Repositories.Base
         IJointRepository<CourseStudents> CourseStudents { get; }
 
         int CommitChanges();
-        System.Threading.Tasks.ValueTask<System.Data.Common.DbTransaction> BeginTransaction();
+        System.Threading.Tasks.ValueTask<IDbContextTransaction> BeginTransaction();
     }
 }

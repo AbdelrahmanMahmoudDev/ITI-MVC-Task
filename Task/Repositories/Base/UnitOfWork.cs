@@ -13,6 +13,7 @@ namespace Task.Repositories.Base
             Courses = new CourseRepository(_Context);
             Departments = new DepartmentRepository(_Context);
             Students = new StudentRepository(_Context);
+            Instructors = new InstructorRepository(_Context);
             CourseStudents = new StudentCourseRepository(_Context);
         }
 
@@ -22,13 +23,13 @@ namespace Task.Repositories.Base
 
         public IRepository<Student> Students { get; private set; }
 
-        public IRepository<Instructor> Instructors => throw new NotImplementedException();
+        public IRepository<Instructor> Instructors { get; private set; }
 
         public IJointRepository<CourseStudents> CourseStudents { get; private set; }
 
-        public async System.Threading.Tasks.ValueTask<System.Data.Common.DbTransaction> BeginTransaction()
+        public async System.Threading.Tasks.ValueTask<IDbContextTransaction> BeginTransaction()
         {
-            return (System.Data.Common.DbTransaction)await _Context.Database.BeginTransactionAsync();
+            return await _Context.Database.BeginTransactionAsync();
         }
 
         public int CommitChanges()

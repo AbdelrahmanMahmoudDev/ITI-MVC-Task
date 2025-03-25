@@ -3,66 +3,74 @@
 *@
 @{
 }
-@model InstructorNewVM
-<div class="col-md-6 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">New Instructor</h4>
-            <p class="card-description"> Please enter instructor details </p>
-            <form class="forms-sample" method="post" asp-controller="Instructor" asp-action="SaveNew">
-                <div class="form-group">
-                    <label asp-for="fname">First name</label>
-                    <input type="text" class="form-control" asp-for="fname" placeholder="First name" />
-                    <span asp-validation-for="fname" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="lname">Last name</label>
-                    <input type="text" class="form-control" asp-for="lname" placeholder="Last name" />
-                    <span asp-validation-for="lname" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="salary">Salary</label>
-                    <input type="number" class="form-control" asp-for="salary" placeholder="Salary">
-                    <span asp-validation-for="salary" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="age">Age</label>
-                    <input type="number" class="form-control" asp-for="age" placeholder="Age">
-                    <span asp-validation-for="age" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="HireDate">Hiring Date</label>
-                    <input type="datetime-local" class="form-control" asp-for="HireDate" placeholder="Hiring Date">
-                    <span asp-validation-for="HireDate" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="selected_department_id">Registered Department</label>
-                    <select asp-for="selected_department_id">
-                        @foreach (var dep in @Model.available_departments)
-                        {
-                            <option value="@dep.DepartmentId">@dep.name</option>
-                        }
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="selected_course_id">Registered Course</label>
-                    <select asp-for="selected_course_id">
-                        @foreach (var crs in @Model.available_courses)
-                        {
-                            <option value="@crs.CourseId">@crs.name</option>
-                        }
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
-                <a asp-controller="Instructor" asp-action="Index" class="btn btn-light">Cancel</a>
-            </form>
-        </div>
-    </div>
+@model InstructorVM
+<div class=" grid-margin stretch-card">
+	<div class="card">
+		<div class="card-body">
+			<h4 class="card-title">New Instructor</h4>
+			<p class="card-description"> Please enter instructor details </p>
+			<form class="forms-sample" method="post" asp-controller="Instructor" asp-action="SaveNew" enctype="multipart/form-data">
+
+				<div class="form-group">
+					<label asp-for="fname">First name</label>
+					<input asp-for="fname" type="text" class="form-control" placeholder="First name" />
+					<span asp-validation-for="fname" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="lname">Last name</label>
+					<input asp-for="lname" type="text" class="form-control" placeholder="Last name" />
+					<span asp-validation-for="lname" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="age">Age</label>
+					<input type="number" class="form-control" asp-for="age" placeholder="Age">
+					<span asp-validation-for="age" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="ImageFile">Profile Picture</label>
+					<input type="file" asp-for="ImageFile" />
+					<span asp-validation-for="ImageFile" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="salary">Salary</label>
+					<input asp-for="salary" type="number" class="form-control" placeholder="Salary">
+					<span asp-validation-for="salary" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="HireDate">Hiring Date</label>
+					<input type="datetime-local" class="form-control" asp-for="HireDate" placeholder="Hiring Date">
+					<span asp-validation-for="HireDate" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="SelectedDepartmentId">Department</label>
+					<select asp-items="@(new SelectList(Model.AvailableDepartments, "DepartmentId", "name"))" asp-for="SelectedDepartmentId" class="form-select" aria-label="Default select example">
+						<option value="0">--Select Department--</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="SelectedCourseId">Course</label>
+					<select asp-items="@(new SelectList(Model.AvailableCourses, "CourseId", "name"))" asp-for="SelectedCourseId" class="form-select" aria-label="Default select example">
+						<option value="0">--Select Course--</option>
+					</select>
+				</div>
+
+				<button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
+				<a asp-controller="Instructor" asp-action="Index" class="btn btn-light">Cancel</a>
+			</form>
+		</div>
+	</div>
 </div>
 
 @section Scripts
 {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+	<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 }

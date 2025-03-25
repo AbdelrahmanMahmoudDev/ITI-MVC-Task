@@ -10,6 +10,7 @@ using Task.Repositories;
 using Task.Repositories.Base;
 using Task.Utilities;
 using Task.ViewModels;
+using Task.ViewModels.Instructor;
 using Task.ViewModels.Student;
 
 namespace Task
@@ -38,6 +39,8 @@ namespace Task
             builder.Services.AddScoped<IStudentService<StudentAddVM>, StudentService>();
             builder.Services.AddScoped<IDepartmentService<DepartmentVM>, DepartmentService>();
             builder.Services.AddScoped<ICourseService<CourseVM>, CourseService>();
+            builder.Services.AddScoped<IInstructorService<InstructorVM>, InstructorService>();
+
             var app = builder.Build();
             FileUtility.WebRootPath = app.Environment.WebRootPath;
             // Configure the HTTP request pipeline.

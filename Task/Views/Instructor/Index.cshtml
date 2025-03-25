@@ -20,7 +20,7 @@
 					<p>Are you sure you want to delete this?</p>
 				</div>
 				<div class="modal-footer">
-					<a id="confirmDeleteBtn" role="button" target="_blank" href="/Instructor/Delete" class="btn btn-danger">S ubmit</a>
+					<a id="confirmDeleteBtn" role="button"  href="/Instructor/Delete" class="btn btn-danger">S ubmit</a>
 					<button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
 				</div>
 			</div>
@@ -59,10 +59,10 @@
 							<td>@Model[i].HireDate</td>
 							<td>@Model[i].Department.name</td>
 							<td>
-								<a role="button" target="_blank" href="/Instructor/Details/@Model[i].InstructorId" class="btn btn-primary">Go to details</a>
+								<a role="button" href="/Instructor/Details/@Model[i].InstructorId" class="btn btn-primary">Go to details</a>
 							</td>
 							<td>
-								<a role="button" target="_blank" href="/Instructor/Edit/@Model[i].InstructorId" class="btn btn-warning">Edit</a>
+								<a role="button" href="/Instructor/Edit/@Model[i].InstructorId" class="btn btn-warning">Edit</a>
 							</td>
 							<td>
 								<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-id="@Model[i].InstructorId">Delete</button>
