@@ -1,4 +1,5 @@
 ﻿using Task.Models;
+using Task.ViewModels.Instructor;
 
 namespace Task.BL
 {
@@ -9,5 +10,7 @@ namespace Task.BL
         public ViewModel PrepareAddForm();
         public System.Threading.Tasks.Task AddInstructor(ViewModel FormData);
         public System.Threading.Tasks.Task RemoveInstructor(int Id);
+        public System.Threading.Tasks.Task EditInstructor(InstructorVM form_data);
+        public ViewModel PrepareEditPage(int Id);
     }
 }

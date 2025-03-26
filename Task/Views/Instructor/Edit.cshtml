@@ -3,45 +3,79 @@
 *@
 @{
 }
-@model InstructorEditVM
-<form method="post" action="/Instructor/SaveEdit/@Model.id">
-    <div class="form-group">
-        <label for="salary">Salary</label>
-        <input type="number" class="form-control" id="salary" name="salary" placeholder="Enter salary" value="@Model?.salary">
-    </div>
-    <hr />
-    <div class="form-group">
-        <label for="existing_courses">Available Courses</label>
-        <select class="custom-select" id="relevant_course_id" name="relevant_course_id">
-            @foreach (var existing_course in @Model.existing_courses)
-            {
-                @if(existing_course.CourseId == @Model.relevant_course_id)
-                {
-                    <option selected value="@existing_course.CourseId">@existing_course.name</option>
-                }
-                else 
-                {
-                    <option value="@existing_course.CourseId">@existing_course.name</option>
-                }
-            }
-        </select>
-    </div>
-    <hr />
-    <div class="form-group">
-        <label for="existing_deps">Available Departments</label>
-        <select class="custom-select" id="relevant_dep_id" name="relevant_dep_id">
-            @foreach (var existing_dep in Model.existing_departments)
-            {
-                @if (existing_dep.DepartmentId == Model.relevant_dep_id)
-                {
-                    <option selected value="@existing_dep.DepartmentId">@existing_dep.name</option>
-                }
-                else
-                {
-                    <option value="@existing_dep.DepartmentId">@existing_dep.name</option>
-                }
-            }
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+@model InstructorVM
+<div class="grid-margin stretch-card">
+	<div class="card">
+		<div class="card-body">
+
+			<h4 class="card-title">Edit Instructor</h4>
+			<p class="card-description"> Please enter instructor details</p>
+
+			<form method="post" asp-controller="Instructor" asp-action="SaveEdit" asp-route-Id="@Model.Id" enctype="multipart/form-data">
+
+				<div class="form-group">
+					<label asp-for="fname">First name</label>
+					<input disabled asp-for="fname" type="text" class="form-control" placeholder="First name" />
+					<span asp-validation-for="fname" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="lname">Last name</label>
+					<input disabled asp-for="lname" type="text" class="form-control" placeholder="Last name" />
+					<span asp-validation-for="lname" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="age">Age</label>
+					<input disabled type="number" class="form-control" asp-for="age" placeholder="Age">
+					<span asp-validation-for="age" class="text-danger"></span>
+				</div>
+
+				<img id="preview-image" src="@Model.image_path" width="50" alt="Profile Picture" />
+
+				<div class="form-group">
+					<label asp-for="ImageFile">Profile Picture</label>
+					<input type="file" asp-for="ImageFile" />
+					<span asp-validation-for="ImageFile" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="salary">Salary</label>
+					<input asp-for="salary" type="number" class="form-control" placeholder="Salary">
+					<span asp-validation-for="salary" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="HireDate">Hiring Date</label>
+					<input disabled type="datetime-local" class="form-control" asp-for="HireDate" placeholder="Hiring Date">
+					<span asp-validation-for="HireDate" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="AvailableDepartments">Available Departments</label>
+					<select asp-items="@(new SelectList(Model.AvailableDepartments, "DepartmentId", "name"))" asp-for="SelectedDepartmentId" class="custom-select">
+						<option value="0">--Select Department--</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="AvailableCourses">Available Courses</label>
+					<select asp-items="@(new SelectList(Model.AvailableCourses, "CourseId", "name"))" asp-for="SelectedCourseId" class="custom-select">
+						<option value="0">--Select Course--</option>
+					</select>
+				</div>
+
+				<button type="submit" class="btn btn-primary">Submit</button>
+
+				<a asp-controller="Instructor" asp-action="Index" class="btn btn-light">Cancel</a>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts
+	{
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+	<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}

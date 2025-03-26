@@ -25,43 +25,29 @@ namespace Task.BL
 
         public InstructorVM PrepareDetailsPage(int Id)
         {
-            throw new NotImplementedException();
-            //var instructor = context.Instructors
-            //            .Where(i => i.InstructorId == id)
-            //            .Select(i => new InstructorVM
-            //            {
-            //                fname = i.fname,
-            //                lname = i.lname,
-            //                full_name = i.fname + " " + i.lname,
-            //                image_path = i.image,
-            //                hire_date = new DateTime(i.HireDate.Value.Year, i.HireDate.Value.Month, i.HireDate.Value.Day),
-            //                salary = i.salary,
-            //                age = i.age
-            //            })
-            //            .FirstOrDefault();
+            var Instructor = _UnitOfWork.Instructors.GetById(Id);
 
-            //if (instructor != null)
-            //{
-            //    instructor.course_names = context.Courses
-            //        .Where(c => c.Instructor.InstructorId == id)
-            //        .Select(c => c.name)
-            //        .ToList();
-            //}
+            if (Instructor == null)
+            {
+                throw new InvalidOperationException();
+            }
 
-            //var Instructor = _UnitOfWork.Instructors.GetById(Id);
+            InstructorVM InstructorModel = new InstructorVM()
+            {
+                fname = Instructor.fname,
+                lname = Instructor.lname,
+                full_name = Instructor.fname + " " + Instructor.lname,
+                image_path = Instructor.image,
+                HireDate = new DateTime(Instructor.HireDate.Value.Year, Instructor.HireDate.Value.Month, Instructor.HireDate.Value.Day),
+                salary = Instructor.salary,
+                age = Instructor.age,
+                course_names = _Context.Courses
+                    .Where(c => c.Instructor.InstructorId == Id)
+                    .Select(c => c.name)
+                    .ToList(),
+            };
 
-            //if(Instructor == null)
-            //{
-            //    throw new InvalidOperationException();
-            //}
-
-            //InstructorVM InstructorModel = new InstructorVM()
-            //{
-            //    fname = Instructor.fname,
-            //    lname = Instructor.lname,
-            //    full_name = Instructor.fname + " " + Instructor.lname,
-            //    imahe_path = i
-            //};
+            return InstructorModel;
         }
 
         public InstructorVM PrepareAddForm()
@@ -103,11 +89,11 @@ namespace Task.BL
             try
             {
                 _UnitOfWork.Instructors.Create(NewGuy);
-                _UnitOfWork.Instructors.UploadToDatabase();
+                await _UnitOfWork.Instructors.UploadToDatabaseAsync();
 
                 Course ChosenCourse = _UnitOfWork.Courses.GetById(FormData.SelectedCourseId);
                 ChosenCourse.InstructorId = NewGuy.InstructorId;
-                _UnitOfWork.Courses.UploadToDatabase();
+                await _UnitOfWork.Courses.UploadToDatabaseAsync();
 
                 await Transaction.CommitAsync();
             }
@@ -132,6 +118,48 @@ namespace Task.BL
             }
 
             await _UnitOfWork.Courses.UploadToDatabaseAsync();
+        }
+
+        public async System.Threading.Tasks.Task EditInstructor(InstructorVM form_data)
+        {
+            Instructor relevant_instructor = _UnitOfWork.Instructors.GetById(form_data.Id);
+
+            relevant_instructor.salary = form_data.salary;
+            relevant_instructor.DepartmentId = form_data.SelectedDepartmentId;
+
+            Course relevant_course = _UnitOfWork.Courses.GetById(form_data.SelectedCourseId); 
+
+            relevant_course.InstructorId = form_data.Id;
+
+            await _UnitOfWork.Courses.UploadToDatabaseAsync();
+        }
+
+        public InstructorVM PrepareEditPage(int Id)
+        {
+            List<Course> RequiredData = _UnitOfWork.Courses.GetAll(["Instructor", "Instructor.Department"]).ToList();
+
+            Instructor TargetInstructor = _UnitOfWork.Instructors.GetById(Id);
+
+            Course RegisteredCourse = RequiredData.Find(D => D.InstructorId == Id);
+
+            InstructorVM Result = new InstructorVM()
+            {
+                Id = TargetInstructor.InstructorId,
+                fname = TargetInstructor.fname,
+                lname = TargetInstructor.lname,
+                age = TargetInstructor.age,
+                full_name = TargetInstructor.fname + " " + TargetInstructor.lname,
+                image_path = TargetInstructor.image,
+                HireDate = new DateTime(TargetInstructor.HireDate.Value.Year, TargetInstructor.HireDate.Value.Month,
+                TargetInstructor.HireDate.Value.Day),
+                salary = TargetInstructor.salary,
+                SelectedDepartmentId = TargetInstructor.DepartmentId,
+                SelectedCourseId = RegisteredCourse.CourseId,
+                AvailableCourses = _UnitOfWork.Courses.GetAll().ToList(),
+                AvailableDepartments = _UnitOfWork.Departments.GetAll().ToList()
+            };
+
+            return Result;
         }
     }
 }

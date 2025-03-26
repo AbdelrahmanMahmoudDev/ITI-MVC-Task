@@ -5,6 +5,7 @@ namespace Task.ViewModels.Instructor
 {
     public class InstructorVM
     {
+        public int Id { get; set; }
         [Required(ErrorMessage = "The first name is a required field")]
         [MaxLength(50)]
         [RegularExpression("^[A-Za-z]+$", ErrorMessage = "First name can only contain letters")]
