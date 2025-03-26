@@ -29,7 +29,7 @@ namespace Task.Contexts
                 .HasOne(cs => cs.Course)
                 .WithMany(c => c.CourseStudents)
                 .HasForeignKey(cs => cs.CourseId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CourseStudents>()
                 .HasOne(cs => cs.Student)
@@ -49,11 +49,6 @@ namespace Task.Contexts
                 .HasForeignKey(c => c.InstructorId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            foreach (var relationship in modelBuilder.Model.GetEntityTypes()
-                .SelectMany(e => e.GetForeignKeys()))
-            {
-                relationship.DeleteBehavior = DeleteBehavior.NoAction;
-            }
             base.OnModelCreating(modelBuilder);
         }
 
