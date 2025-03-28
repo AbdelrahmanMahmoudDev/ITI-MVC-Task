@@ -16,10 +16,10 @@
 						</div>
 						<h4>Role</h4>
 						<form method="post" asp-controller="Role" asp-action="SaveRole" class="pt-3">
-							<div class="form-check">
-								<label asp-for="@Model.RoleName" class="form-check-label text-muted">
-									<input asp-for="@Model.RoleName" placeholder="Role" type="text" class="form-check-input">
-								</label>
+							<div class="form-group">
+								<label asp-for="@Model.RoleName">Role</label>
+								<input asp-for="@Model.RoleName" type="text" class="form-control" placeholder="Role" />
+								<span asp-validation-for="@Model.RoleName" class="text-danger"></span>
 							</div>
 							<div class="mt-3">
 								<button type="submit" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn">SUBMIT</button>
@@ -37,3 +37,9 @@
 	<!-- page-body-wrapper ends -->
 </div>
 <!-- container-scroller -->
+
+@section Scripts
+{
+	<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+	<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+}
