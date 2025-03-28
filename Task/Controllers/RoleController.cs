@@ -18,6 +18,8 @@ namespace Task.Controllers
             return View("Index");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveRole(RoleViewModel FormData)
         {
             if(!ModelState.IsValid)
@@ -39,9 +41,7 @@ namespace Task.Controllers
                 }
             }
 
-            return View("Index", "Role");
-
-
+            return RedirectToAction("Index", "Role");
         }
     }
 }
