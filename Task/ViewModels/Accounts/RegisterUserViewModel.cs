@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Task.ViewModels.Accounts
 {
@@ -16,5 +17,10 @@ namespace Task.ViewModels.Accounts
         [Display(Name = "Confirm Password")]
         [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; }
+        [Required(ErrorMessage="*")]
+        public string Email { get; set; }
+        [Required(ErrorMessage= "*")]
+        public string ChosenRole { get; set; }
+        public List<IdentityRole> AvailableRoles = new List<IdentityRole>(); 
     }
 }

@@ -4,19 +4,30 @@
 @{
 }
 @model InstructorVM
-<div class="card" style="width: 18rem;">
+
+<div class="card">
 	<div class="card-body">
-		<img class="block rounded float-end" src=@Model.image_path width="110" />
-		<h5 class="card-text">@Model.full_name</h5>
-		<p class="card-text">@Model.HireDate</p>
-		<div class="list-weapper">
-			<ul class="list-unstyled">
-				@foreach (var course in Model.course_names)
-				{
-					<li style="color: red;">@course</li>
-				}
-			</ul>
+		<div class="col-lg-12">
+			<div class="border-bottom text-center pb-4">
+				<img src="@Model.image_path" alt="profile" class="img-lg rounded-circle mb-3">
+				<p>@Model.full_name</p>
+			</div>
+			<div class="py-4">
+				<p class="clearfix">
+					<span class="float-start"> Hiring Date </span>
+					<span class="float-end text-muted"> @Model.HireDate </span>
+				</p>
+				<p class="clearfix">
+					<span class="float-start"> Registered Courses </span>
+					<ul class="list-group">
+						@foreach (var course in Model.course_names)
+						{
+							<li class="list-group-item list-group-item-danger">@course</li>
+						}
+					</ul>
+				</p>
+			</div>
+			<a href="/Student/index" class="btn btn-gradient-primary">Go to table</a>
 		</div>
-		<a href="/Instructor/index" class="btn btn-primary">Go to table</a>
 	</div>
 </div>

@@ -2,6 +2,7 @@
 using Task.ViewModels.Student;
 using System.Diagnostics;
 using Task.BL;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Task.Controllers
 {
@@ -78,7 +79,7 @@ namespace Task.Controllers
             }
 
         }
-
+        [Authorize(Roles = "Admin")]
         public IActionResult Add()
         {
             try

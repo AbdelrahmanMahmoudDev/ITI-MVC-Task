@@ -1,7 +1,10 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Task.Models;
+using Task.Repositories.Base;
+using Task.ViewModels;
 using Task.ViewModels.Accounts;
 
 namespace Task.Controllers
@@ -10,24 +13,37 @@ namespace Task.Controllers
     {
         private readonly UserManager<ApplicationUser> _UserManager;
         private readonly SignInManager<ApplicationUser> _SignInManager;
+        private readonly RoleManager<IdentityRole> _RoleManager;
+        private readonly IUnitOfWork _UnitOfWork;
 
 
-        public HomeController(UserManager<ApplicationUser> UserManager, SignInManager<ApplicationUser> SignInManager)
+        public HomeController(UserManager<ApplicationUser> UserManager, SignInManager<ApplicationUser> SignInManager, RoleManager<IdentityRole> RoleManager, IUnitOfWork UnitOfWork)
         {
             _UserManager = UserManager ?? throw new ArgumentNullException(nameof(UserManager));
             _SignInManager = SignInManager ?? throw new ArgumentNullException(nameof(SignInManager));
+            _RoleManager = RoleManager ?? throw new ArgumentNullException(nameof(RoleManager));
+            _UnitOfWork = UnitOfWork ?? throw new ArgumentNullException(nameof(UnitOfWork));
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            return View();
+            DashboardVM RequiredData = new DashboardVM()
+            {
+                InstructorCount = _UnitOfWork.Instructors.GetAll().ToList().Count,
+                DepartmentCount = _UnitOfWork.Departments.GetAll().ToList().Count,
+                CourseCount     = _UnitOfWork.Courses.GetAll().ToList().Count,
+                StudentCount    = _UnitOfWork.Students.GetAll().ToList().Count
+            };
+            return View(RequiredData);
         }
 
         [HttpGet]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
-            return View();
+            RegisterUserViewModel RequiredData = new RegisterUserViewModel();
+            RequiredData.AvailableRoles = await _RoleManager.Roles.ToListAsync();
+            return View(RequiredData);
         }
 
         [HttpPost]
@@ -36,20 +52,28 @@ namespace Task.Controllers
         {
             if (!ModelState.IsValid)
             {
+                FormData.AvailableRoles = await _RoleManager.Roles.ToListAsync();
                 return View("Register", FormData);
             }
+
             ApplicationUser AppUser = new ApplicationUser()
             {
                 UserName = FormData.Username,
-                PasswordHash = FormData.Password
+                PasswordHash = FormData.Password,
+                Email = FormData.Email
             };
+
             IdentityResult RegisterResult = await _UserManager.CreateAsync(AppUser, FormData.Password);
             if (RegisterResult.Succeeded)
             {
-                // TODO: Roles
+                IdentityRole AssignedRole = await _RoleManager.FindByIdAsync(FormData.ChosenRole);
+                await _UserManager.AddToRoleAsync(AppUser, AssignedRole.Name);
+
+                // TODO: Figure out where to keep user after sign in
                 await _SignInManager.SignInAsync(AppUser, false);
                 return RedirectToAction("Index", "Student");
             }
+
             return View("Index");
         }
 
@@ -57,7 +81,7 @@ namespace Task.Controllers
         public async Task<IActionResult> SignOut()
         {
             await _SignInManager.SignOutAsync();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", "Home");
         }
 
         [HttpGet]
@@ -76,14 +100,14 @@ namespace Task.Controllers
             }
 
             ApplicationUser TargetUser = await _UserManager.FindByNameAsync(FormData.Username);
-            if(TargetUser == null)
+            if (TargetUser == null)
             {
                 ModelState.AddModelError("", "Username or password is incorrect.");
                 return RedirectToAction("Login", "Home");
             }
 
             bool IsPasswordCorrect = await _UserManager.CheckPasswordAsync(TargetUser, FormData.Password);
-            if(!IsPasswordCorrect)
+            if (!IsPasswordCorrect)
             {
                 ModelState.AddModelError("", "Username or password is incorrect.");
                 return RedirectToAction("Login", "Home");

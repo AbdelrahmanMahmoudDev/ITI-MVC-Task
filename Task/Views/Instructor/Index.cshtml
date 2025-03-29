@@ -20,7 +20,7 @@
 					<p>Are you sure you want to delete this?</p>
 				</div>
 				<div class="modal-footer">
-					<a id="confirmDeleteBtn" role="button"  href="/Instructor/Delete" class="btn btn-danger">S ubmit</a>
+					<a id="confirmDeleteBtn" role="button" href="/Instructor/Delete" class="btn btn-danger">S ubmit</a>
 					<button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
 				</div>
 			</div>
@@ -29,7 +29,10 @@
 	<!-- Modal Ends -->
 </div>
 
-<a role="button" asp-controller="Instructor" asp-action="Add" class="btn btn-success">New</a>
+@if (User.IsInRole("Admin"))
+{
+	<a role="button" asp-controller="Instructor" asp-action="Add" class="btn btn-success">New</a>
+}
 
 <div class="card">
 	<div class="card-body">
@@ -44,8 +47,11 @@
 						<th scope="col">Hire Date</th>
 						<th scope="col">Department</th>
 						<th scope="col"></th>
-						<th scope="col"></th>
-						<th scope="col"></th>
+						@if (User.IsInRole("Admin") || User.IsInRole("HR"))
+						{
+							<th scope="col"></th>
+							<th scope="col"></th>
+						}
 					</tr>
 				</thead>
 				<tbody>
@@ -58,15 +64,33 @@
 							<td>@Model[i].age</td>
 							<td>@Model[i].HireDate</td>
 							<td>@Model[i].Department.name</td>
-							<td>
-								<a role="button" href="/Instructor/Details/@Model[i].InstructorId" class="btn btn-primary">Go to details</a>
-							</td>
-							<td>
-								<a role="button" href="/Instructor/Edit/@Model[i].InstructorId" class="btn btn-warning">Edit</a>
-							</td>
-							<td>
-								<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-id="@Model[i].InstructorId">Delete</button>
-							</td>
+							@if (User.IsInRole("Admin"))
+							{
+								<td>
+									<a role="button" href="/Instructor/Details/@Model[i].InstructorId" class="btn btn-primary">Go to details</a>
+								</td>
+								<td>
+									<a role="button" href="/Instructor/Edit/@Model[i].InstructorId" class="btn btn-warning">Edit</a>
+								</td>
+								<td>
+									<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-id="@Model[i].InstructorId">Delete</button>
+								</td>
+							}
+							else if (User.IsInRole("Instructor"))
+							{
+								<td>
+									<a role="button" href="/Instructor/Details/@Model[i].InstructorId" class="btn btn-primary">Go to details</a>
+								</td>
+							}
+							else if (User.IsInRole("HR"))
+							{
+								<td>
+									<a role="button" href="/Instructor/Edit/@Model[i].InstructorId" class="btn btn-warning">Edit</a>
+								</td>
+								<td>
+									<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-id="@Model[i].InstructorId">Delete</button>
+								</td>
+							}
 						</tr>
 					}
 				</tbody>
@@ -83,7 +107,7 @@
 		deleteButtons.forEach(function (button) {
 			button.addEventListener("click", function () {
 				var instructorId = button.getAttribute("data-id");
-				confirmDeleteBtn.href = "/Instructor/Delete/" + instructorId; 
+				confirmDeleteBtn.href = "/Instructor/Delete/" + instructorId;
 			});
 		});
 	});

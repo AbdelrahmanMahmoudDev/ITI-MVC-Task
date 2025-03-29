@@ -31,7 +31,10 @@
 <input type="text" id="searchBox" placeholder="Search..." class="form-control">
 <div id="searchResults"></div>
 
-<a role="button" asp-controller="Student" asp-action="Add" class="btn btn-success">New</a>
+@if (User.IsInRole("Admin"))
+{
+	<a role="button" asp-controller="Student" asp-action="Add" class="btn btn-success">New</a>
+}
 
 <div class="card">
 	<div class="card-body">
@@ -45,8 +48,11 @@
 						<th scope="col">Address</th>
 						<th scope="col">Department</th>
 						<th scope="col"></th>
-						<th scope="col"></th>
-						<th scope="col"></th>
+						@if (User.IsInRole("HR") || User.IsInRole("Admin"))
+						{
+							<th scope="col"></th>
+							<th scope="col"></th>
+						}
 					</tr>
 				</thead>
 				<tbody>
@@ -58,15 +64,33 @@
 							<td>@Model[i].age</td>
 							<td>@Model[i].address</td>
 							<td>@Model[i].Department.name</td>
-							<td>
-								<a role="button" href="/Student/Details/@Model[i].StudentId" class="btn btn-primary">Go to details</a>
-							</td>
-							<td>
-								<a role="button" href="/Student/Edit/@Model[i].StudentId" class="btn btn-warning">Edit</a>
-							</td>
-							<td>
-								<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-id="@Model[i].StudentId">Delete</button>
-							</td>
+							@if(User.IsInRole("Admin"))
+							{
+								<td>
+									<a role="button" href="/Student/Details/@Model[i].StudentId" class="btn btn-primary">Go to details</a>
+								</td>
+								<td>
+									<a role="button" href="/Student/Edit/@Model[i].StudentId" class="btn btn-warning">Edit</a>
+								</td>
+								<td>
+									<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-id="@Model[i].StudentId">Delete</button>
+								</td>
+							}
+							else if (User.IsInRole("Student"))
+							{
+								<td>
+									<a role="button" href="/Student/Details/@Model[i].StudentId" class="btn btn-primary">Go to details</a>
+								</td>
+							}
+							else if (User.IsInRole("HR"))
+							{
+								<td>
+									<a role="button" href="/Student/Edit/@Model[i].StudentId" class="btn btn-warning">Edit</a>
+								</td>
+								<td>
+									<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-id="@Model[i].StudentId">Delete</button>
+								</td>
+							}
 						</tr>
 					}
 				</tbody>

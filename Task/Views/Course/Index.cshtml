@@ -44,7 +44,6 @@
 						<th scope="col">Topic</th>
 						<th scope="col">Minimum Degree</th>
 						<th scope="col"></th>
-						@* <th scope="col"></th> *@
 						<th scope="col"></th>
 					</tr>
 				</thead>
@@ -58,9 +57,6 @@
 								<td>@Model[i].name</td>
 								<td>@Model[i].topic</td>
 								<td>@Model[i].MinimumDegree</td>
-								@* <td> *@
-								@* 	<a role="button" href="/Student/Details/@Model[i].DepartmentId" class="btn btn-primary">Go to details</a> *@
-								@* </td> *@
 								<td>
 									<a role="button" href="/Course/Edit/@Model[i].CourseId" class="btn btn-warning">Edit</a>
 								</td>

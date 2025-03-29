@@ -24,10 +24,6 @@ namespace Task
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddExceptionHandler<CustomException>();
-            builder.Services.Configure<FormOptions>(options =>
-            {
-                options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB max file size
-            });
             builder.Services.AddDbContext<SchoolContext>(Options =>
             {
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
@@ -59,7 +55,7 @@ namespace Task
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
+                pattern: "{controller=Home}/{action=Login}/{id?}")
                 .WithStaticAssets();
 
             app.Run();
