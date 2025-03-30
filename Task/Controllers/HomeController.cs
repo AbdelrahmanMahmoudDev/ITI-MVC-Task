@@ -32,9 +32,10 @@ namespace Task.Controllers
             {
                 InstructorCount = _UnitOfWork.Instructors.GetAll().ToList().Count,
                 DepartmentCount = _UnitOfWork.Departments.GetAll().ToList().Count,
-                CourseCount     = _UnitOfWork.Courses.GetAll().ToList().Count,
-                StudentCount    = _UnitOfWork.Students.GetAll().ToList().Count
+                CourseCount = _UnitOfWork.Courses.GetAll().ToList().Count,
+                StudentCount = _UnitOfWork.Students.GetAll().ToList().Count
             };
+            ViewData["Title"] = "Home Page";
             return View(RequiredData);
         }
 
@@ -50,31 +51,29 @@ namespace Task.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveRegister(RegisterUserViewModel FormData)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                FormData.AvailableRoles = await _RoleManager.Roles.ToListAsync();
-                return View("Register", FormData);
+                ApplicationUser AppUser = new ApplicationUser()
+                {
+                    UserName = FormData.Username,
+                    PasswordHash = FormData.Password,
+                    Email = FormData.Email
+                };
+
+                IdentityResult RegisterResult = await _UserManager.CreateAsync(AppUser, FormData.Password);
+                if (RegisterResult.Succeeded)
+                {
+                    IdentityRole AssignedRole = await _RoleManager.FindByIdAsync(FormData.ChosenRole);
+                    await _UserManager.AddToRoleAsync(AppUser, AssignedRole.Name);
+
+                    // TODO: Figure out where to keep user after sign in
+                    await _SignInManager.SignInAsync(AppUser, false);
+                    return RedirectToAction("Index", "Student");
+                }
             }
 
-            ApplicationUser AppUser = new ApplicationUser()
-            {
-                UserName = FormData.Username,
-                PasswordHash = FormData.Password,
-                Email = FormData.Email
-            };
-
-            IdentityResult RegisterResult = await _UserManager.CreateAsync(AppUser, FormData.Password);
-            if (RegisterResult.Succeeded)
-            {
-                IdentityRole AssignedRole = await _RoleManager.FindByIdAsync(FormData.ChosenRole);
-                await _UserManager.AddToRoleAsync(AppUser, AssignedRole.Name);
-
-                // TODO: Figure out where to keep user after sign in
-                await _SignInManager.SignInAsync(AppUser, false);
-                return RedirectToAction("Index", "Student");
-            }
-
-            return View("Index");
+            FormData.AvailableRoles = await _RoleManager.Roles.ToListAsync();
+            return View("Register", FormData);
         }
 
         [HttpGet]
